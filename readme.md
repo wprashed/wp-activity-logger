@@ -1,6 +1,6 @@
 # WP Activity Logger Pro
 
-![WP Activity Logger Pro](assets/images/banner.png)
+![WP Activity Logger Pro]
 
 ## Description
 
