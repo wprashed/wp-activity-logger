@@ -138,9 +138,7 @@ Note: By default, the plugin will retain its database tables and settings when d
 
 If you encounter any issues during installation:
 
-- Review our [Frequently Asked Questions](https://example.com/faq)
-- Check the [Troubleshooting Guide](https://example.com/troubleshooting)
-- Contact our support team at support@example.com
+- Review our [Frequently Asked Questions](faq.md)
 
 ## Next Steps
 
