@@ -1,7 +1,5 @@
 # WP Activity Logger Pro
 
-![WP Activity Logger Pro]
-
 ## Description
 
 WP Activity Logger Pro is a comprehensive activity logging solution for WordPress. It tracks user and system activities, providing detailed logs, real-time notifications, and advanced reporting capabilities.
