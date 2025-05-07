@@ -10,402 +10,330 @@ if (!defined('ABSPATH')) {
 
 class WPAL_Tracker {
     /**
-     * Initialize the tracker
+     * Constructor
      */
-    public static function init() {
+    public function __construct() {
+        // Nothing to do here
+    }
+
+    /**
+     * Initialize tracker
+     */
+    public function init() {
         // Track user login
-        add_action('wp_login', [__CLASS__, 'track_login'], 10, 2);
+        add_action('wp_login', array($this, 'track_login'), 10, 2);
         
         // Track user logout
-        add_action('wp_logout', [__CLASS__, 'track_logout']);
+        add_action('wp_logout', array($this, 'track_logout'));
         
         // Track failed login
-        add_action('wp_login_failed', [__CLASS__, 'track_login_failed']);
+        add_action('wp_login_failed', array($this, 'track_login_failed'));
         
-        // Track password reset
-        add_action('after_password_reset', [__CLASS__, 'track_password_reset'], 10, 2);
-        
-        // Track user registration
-        add_action('user_register', [__CLASS__, 'track_user_registration']);
-        
-        // Track user profile update
-        add_action('profile_update', [__CLASS__, 'track_profile_update'], 10, 2);
-        
-        // Track post creation
-        add_action('wp_insert_post', [__CLASS__, 'track_post_creation'], 10, 3);
-        
-        // Track post update
-        add_action('post_updated', [__CLASS__, 'track_post_update'], 10, 3);
+        // Track post creation and updates
+        add_action('save_post', array($this, 'track_post_save'), 10, 3);
         
         // Track post deletion
-        add_action('before_delete_post', [__CLASS__, 'track_post_deletion']);
+        add_action('delete_post', array($this, 'track_post_delete'));
+        
+        // Track user creation
+        add_action('user_register', array($this, 'track_user_register'));
+        
+        // Track user profile update
+        add_action('profile_update', array($this, 'track_profile_update'), 10, 2);
+        
+        // Track user deletion
+        add_action('delete_user', array($this, 'track_user_delete'));
         
         // Track plugin activation
-        add_action('activated_plugin', [__CLASS__, 'track_plugin_activation'], 10, 2);
+        add_action('activated_plugin', array($this, 'track_plugin_activation'));
         
         // Track plugin deactivation
-        add_action('deactivated_plugin', [__CLASS__, 'track_plugin_deactivation'], 10, 2);
+        add_action('deactivated_plugin', array($this, 'track_plugin_deactivation'));
         
         // Track theme switch
-        add_action('switch_theme', [__CLASS__, 'track_theme_switch'], 10, 3);
+        add_action('switch_theme', array($this, 'track_theme_switch'), 10, 3);
         
-        // Track 404 errors
-        add_action('template_redirect', [__CLASS__, 'track_404_errors']);
-        
-        // Track API requests
-        add_action('rest_api_init', [__CLASS__, 'track_api_requests']);
+        // Track WordPress updates
+        add_action('upgrader_process_complete', array($this, 'track_wordpress_update'), 10, 2);
     }
-    
+
     /**
      * Track user login
-     *
-     * @param string $user_login
-     * @param WP_User $user
      */
-    public static function track_login($user_login, $user) {
+    public function track_login($user_login, $user) {
         WPAL_Helpers::log_activity(
-            'User login',
+            'user_login',
+            sprintf(__('User %s logged in', 'wp-activity-logger-pro'), $user_login),
             'info',
-            [
-                'user_id' => $user->ID,
-                'user_login' => $user_login,
-                'user_email' => $user->user_email,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'user',
+            $user->ID,
+            $user_login
         );
     }
-    
+
     /**
      * Track user logout
      */
-    public static function track_logout() {
+    public function track_logout() {
         $current_user = wp_get_current_user();
         
-        if (!$current_user || !$current_user->exists()) {
+        if ($current_user->ID === 0) {
             return;
         }
         
         WPAL_Helpers::log_activity(
-            'User logout',
+            'user_logout',
+            sprintf(__('User %s logged out', 'wp-activity-logger-pro'), $current_user->user_login),
             'info',
-            [
-                'user_id' => $current_user->ID,
-                'user_login' => $current_user->user_login,
-                'user_email' => $current_user->user_email,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'user',
+            $current_user->ID,
+            $current_user->user_login
         );
     }
-    
+
     /**
      * Track failed login
-     *
-     * @param string $username
      */
-    public static function track_login_failed($username) {
+    public function track_login_failed($username) {
         WPAL_Helpers::log_activity(
-            'Failed login attempt',
+            'login_failed',
+            sprintf(__('Failed login attempt for user %s', 'wp-activity-logger-pro'), $username),
             'warning',
-            [
-                'username' => $username,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'user',
+            0,
+            $username
         );
     }
-    
+
     /**
-     * Track password reset
-     *
-     * @param WP_User $user
-     * @param string $new_password
+     * Track post save
      */
-    public static function track_password_reset($user, $new_password) {
-        WPAL_Helpers::log_activity(
-            'Password reset',
-            'info',
-            [
-                'user_id' => $user->ID,
-                'user_login' => $user->user_login,
-                'user_email' => $user->user_email,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
-    }
-    
-    /**
-     * Track user registration
-     *
-     * @param int $user_id
-     */
-    public static function track_user_registration($user_id) {
-        $user = get_user_by('id', $user_id);
-        
-        if (!$user) {
+    public function track_post_save($post_id, $post, $update) {
+        // Skip auto-saves and revisions
+        if ((defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) || wp_is_post_revision($post_id)) {
             return;
         }
         
-        WPAL_Helpers::log_activity(
-            'User registered',
-            'info',
-            [
-                'user_id' => $user->ID,
-                'user_login' => $user->user_login,
-                'user_email' => $user->user_email,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
-    }
-    
-    /**
-     * Track user profile update
-     *
-     * @param int $user_id
-     * @param WP_User $old_user_data
-     */
-    public static function track_profile_update($user_id, $old_user_data) {
-        $user = get_user_by('id', $user_id);
-        
-        if (!$user) {
+        // Skip if post is not published
+        if ($post->post_status !== 'publish') {
             return;
         }
         
-        WPAL_Helpers::log_activity(
-            'User profile updated',
-            'info',
-            [
-                'user_id' => $user->ID,
-                'user_login' => $user->user_login,
-                'user_email' => $user->user_email,
-                'old_email' => $old_user_data->user_email,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
-    }
-    
-    /**
-     * Track post creation
-     *
-     * @param int $post_id
-     * @param WP_Post $post
-     * @param bool $update
-     */
-    public static function track_post_creation($post_id, $post, $update) {
-        if ($update || wp_is_post_revision($post_id) || wp_is_post_autosave($post_id) || $post->post_status === 'auto-draft') {
-            return;
-        }
+        // Get post type label
+        $post_type_obj = get_post_type_object($post->post_type);
+        $post_type_label = $post_type_obj ? $post_type_obj->labels->singular_name : $post->post_type;
         
-        WPAL_Helpers::log_activity(
-            'Post created: ' . $post->post_title,
-            'info',
-            [
-                'post_id' => $post_id,
-                'post_title' => $post->post_title,
-                'post_type' => $post->post_type,
-                'post_status' => $post->post_status,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
-    }
-    
-    /**
-     * Track post update
-     *
-     * @param int $post_id
-     * @param WP_Post $post_after
-     * @param WP_Post $post_before
-     */
-    public static function track_post_update($post_id, $post_after, $post_before) {
-        if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id) || $post_after->post_status === 'auto-draft') {
-            return;
+        if ($update) {
+            WPAL_Helpers::log_activity(
+                'post_updated',
+                sprintf(__('%s "%s" updated', 'wp-activity-logger-pro'), $post_type_label, $post->post_title),
+                'info',
+                $post->post_type,
+                $post_id,
+                $post->post_title
+            );
+        } else {
+            WPAL_Helpers::log_activity(
+                'post_created',
+                sprintf(__('%s "%s" created', 'wp-activity-logger-pro'), $post_type_label, $post->post_title),
+                'info',
+                $post->post_type,
+                $post_id,
+                $post->post_title
+            );
         }
-        
-        // Check if this is a new post
-        if ($post_before->post_status === 'auto-draft' || $post_before->post_status === 'new') {
-            return;
-        }
-        
-        WPAL_Helpers::log_activity(
-            'Post updated: ' . $post_after->post_title,
-            'info',
-            [
-                'post_id' => $post_id,
-                'post_title' => $post_after->post_title,
-                'post_type' => $post_after->post_type,
-                'post_status' => $post_after->post_status,
-                'previous_status' => $post_before->post_status,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
     }
-    
+
     /**
-     * Track post deletion
-     *
-     * @param int $post_id
+     * Track post delete
      */
-    public static function track_post_deletion($post_id) {
+    public function track_post_delete($post_id) {
         $post = get_post($post_id);
         
-        if (!$post || wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
+        if (!$post) {
+            return;
+        }
+        
+        // Get post type label
+        $post_type_obj = get_post_type_object($post->post_type);
+        $post_type_label = $post_type_obj ? $post_type_obj->labels->singular_name : $post->post_type;
+        
+        WPAL_Helpers::log_activity(
+            'post_deleted',
+            sprintf(__('%s "%s" deleted', 'wp-activity-logger-pro'), $post_type_label, $post->post_title),
+            'warning',
+            $post->post_type,
+            $post_id,
+            $post->post_title
+        );
+    }
+
+    /**
+     * Track user register
+     */
+    public function track_user_register($user_id) {
+        $user = get_userdata($user_id);
+        
+        if (!$user) {
             return;
         }
         
         WPAL_Helpers::log_activity(
-            'Post deleted: ' . $post->post_title,
-            'warning',
-            [
-                'post_id' => $post_id,
-                'post_title' => $post->post_title,
-                'post_type' => $post->post_type,
-                'post_status' => $post->post_status,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'user_registered',
+            sprintf(__('User %s registered', 'wp-activity-logger-pro'), $user->user_login),
+            'info',
+            'user',
+            $user_id,
+            $user->user_login
         );
     }
-    
+
+    /**
+     * Track profile update
+     */
+    public function track_profile_update($user_id, $old_user_data) {
+        $user = get_userdata($user_id);
+        
+        if (!$user) {
+            return;
+        }
+        
+        WPAL_Helpers::log_activity(
+            'profile_updated',
+            sprintf(__('User %s profile updated', 'wp-activity-logger-pro'), $user->user_login),
+            'info',
+            'user',
+            $user_id,
+            $user->user_login
+        );
+    }
+
+    /**
+     * Track user delete
+     */
+    public function track_user_delete($user_id) {
+        $user = get_userdata($user_id);
+        
+        if (!$user) {
+            return;
+        }
+        
+        WPAL_Helpers::log_activity(
+            'user_deleted',
+            sprintf(__('User %s deleted', 'wp-activity-logger-pro'), $user->user_login),
+            'warning',
+            'user',
+            $user_id,
+            $user->user_login
+        );
+    }
+
     /**
      * Track plugin activation
-     *
-     * @param string $plugin
-     * @param bool $network_wide
      */
-    public static function track_plugin_activation($plugin, $network_wide) {
+    public function track_plugin_activation($plugin) {
         $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin);
+        $plugin_name = !empty($plugin_data['Name']) ? $plugin_data['Name'] : $plugin;
         
         WPAL_Helpers::log_activity(
-            'Plugin activated: ' . $plugin_data['Name'],
+            'plugin_activated',
+            sprintf(__('Plugin "%s" activated', 'wp-activity-logger-pro'), $plugin_name),
             'info',
-            [
-                'plugin' => $plugin,
-                'plugin_name' => $plugin_data['Name'],
-                'plugin_version' => $plugin_data['Version'],
-                'network_wide' => $network_wide,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'plugin',
+            0,
+            $plugin_name
         );
     }
-    
+
     /**
      * Track plugin deactivation
-     *
-     * @param string $plugin
-     * @param bool $network_wide
      */
-    public static function track_plugin_deactivation($plugin, $network_wide) {
+    public function track_plugin_deactivation($plugin) {
         $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin);
+        $plugin_name = !empty($plugin_data['Name']) ? $plugin_data['Name'] : $plugin;
         
         WPAL_Helpers::log_activity(
-            'Plugin deactivated: ' . $plugin_data['Name'],
+            'plugin_deactivated',
+            sprintf(__('Plugin "%s" deactivated', 'wp-activity-logger-pro'), $plugin_name),
             'info',
-            [
-                'plugin' => $plugin,
-                'plugin_name' => $plugin_data['Name'],
-                'plugin_version' => $plugin_data['Version'],
-                'network_wide' => $network_wide,
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'plugin',
+            0,
+            $plugin_name
         );
     }
-    
+
     /**
      * Track theme switch
-     *
-     * @param string $new_name
-     * @param WP_Theme $new_theme
-     * @param WP_Theme $old_theme
      */
-    public static function track_theme_switch($new_name, $new_theme, $old_theme) {
+    public function track_theme_switch($new_theme_name, $new_theme, $old_theme) {
+        $old_theme_name = $old_theme ? $old_theme->get('Name') : __('Unknown', 'wp-activity-logger-pro');
+        
         WPAL_Helpers::log_activity(
-            'Theme switched',
+            'theme_switched',
+            sprintf(__('Theme switched from "%s" to "%s"', 'wp-activity-logger-pro'), $old_theme_name, $new_theme_name),
             'info',
-            [
-                'new_theme' => $new_name,
-                'new_theme_version' => $new_theme->get('Version'),
-                'old_theme' => $old_theme->get('Name'),
-                'old_theme_version' => $old_theme->get('Version'),
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
+            'theme',
+            0,
+            $new_theme_name
         );
     }
-    
+
     /**
-     * Track 404 errors
+     * Track WordPress update
      */
-    public static function track_404_errors() {
-        if (!is_404()) {
+    public function track_wordpress_update($upgrader, $options) {
+        if (!isset($options['action']) || $options['action'] !== 'update') {
             return;
         }
         
-        // Check if 404 tracking is enabled
-        if (!get_option('wpal_track_404_errors', true)) {
-            return;
+        // WordPress core update
+        if ($options['type'] === 'core') {
+            $wp_version = get_bloginfo('version');
+            
+            WPAL_Helpers::log_activity(
+                'wordpress_updated',
+                sprintf(__('WordPress updated to version %s', 'wp-activity-logger-pro'), $wp_version),
+                'info',
+                'core',
+                0,
+                $wp_version
+            );
         }
         
-        $current_url = home_url($_SERVER['REQUEST_URI']);
-        
-        WPAL_Helpers::log_activity(
-            '404 Error: Page not found',
-            'warning',
-            [
-                'url' => $current_url,
-                'referrer' => isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '',
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
-    }
-    
-    /**
-     * Track API requests
-     */
-    public static function track_api_requests() {
-        // Check if API tracking is enabled
-        if (!get_option('wpal_track_api_requests', false)) {
-            return;
+        // Plugin updates
+        if ($options['type'] === 'plugin' && !empty($options['plugins'])) {
+            foreach ($options['plugins'] as $plugin) {
+                $plugin_data = get_plugin_data(WP_PLUGIN_DIR . '/' . $plugin);
+                $plugin_name = !empty($plugin_data['Name']) ? $plugin_data['Name'] : $plugin;
+                $plugin_version = !empty($plugin_data['Version']) ? $plugin_data['Version'] : '';
+                
+                WPAL_Helpers::log_activity(
+                    'plugin_updated',
+                    sprintf(__('Plugin "%s" updated to version %s', 'wp-activity-logger-pro'), $plugin_name, $plugin_version),
+                    'info',
+                    'plugin',
+                    0,
+                    $plugin_name
+                );
+            }
         }
         
-        // Only track REST API requests
-        if (!defined('REST_REQUEST') || !REST_REQUEST) {
-            return;
+        // Theme updates
+        if ($options['type'] === 'theme' && !empty($options['themes'])) {
+            foreach ($options['themes'] as $theme) {
+                $theme_data = wp_get_theme($theme);
+                $theme_name = $theme_data->get('Name');
+                $theme_version = $theme_data->get('Version');
+                
+                WPAL_Helpers::log_activity(
+                    'theme_updated',
+                    sprintf(__('Theme "%s" updated to version %s', 'wp-activity-logger-pro'), $theme_name, $theme_version),
+                    'info',
+                    'theme',
+                    0,
+                    $theme_name
+                );
+            }
         }
-        
-        $route = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
-        
-        WPAL_Helpers::log_activity(
-            'API Request',
-            'info',
-            [
-                'route' => $route,
-                'method' => isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : '',
-                'ip' => WPAL_Helpers::get_client_ip(),
-                'browser' => WPAL_Helpers::get_browser(),
-                'os' => WPAL_Helpers::get_os()
-            ]
-        );
     }
 }
