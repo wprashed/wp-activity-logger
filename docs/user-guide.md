@@ -141,14 +141,6 @@ The Diagnostics page provides information about your system and the plugin's sta
 
 This information is valuable when seeking support.
 
-## Getting Help
-
-If you need assistance with the plugin:
-
-1. Check the [FAQ](https://example.com/faq) for answers to common questions
-2. Review the [documentation](https://example.com/docs) for detailed information
-3. Contact [support](https://example.com/support) for personalized help
-
 ## Conclusion
 
 WP Activity Logger Pro provides comprehensive activity tracking for your WordPress site. By regularly reviewing the logs and setting up appropriate notifications, you can maintain better security and gain valuable insights into how your site is being used.
