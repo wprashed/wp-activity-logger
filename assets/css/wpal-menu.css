@@ -1,0 +1,67 @@
+/* Activity Logger Pro Menu Styling */
+
+/* Main menu item styling */
+#adminmenu li.toplevel_page_wp-activity-logger-pro .wp-menu-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#adminmenu li.toplevel_page_wp-activity-logger-pro .wp-menu-name {
+  font-weight: 600;
+}
+
+/* Custom menu header background */
+#adminmenu li.toplevel_page_wp-activity-logger-pro > a {
+  background-color: #1e88e5 !important;
+  color: white !important;
+}
+
+#adminmenu li.toplevel_page_wp-activity-logger-pro:hover > a,
+#adminmenu li.toplevel_page_wp-activity-logger-pro.opensub > a {
+  background-color: #1976d2 !important;
+  color: white !important;
+}
+
+/* Menu group headers */
+.wpal-menu-group {
+  display: block;
+  margin-top: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  color: rgba(240, 246, 252, 0.6);
+  padding-left: 0;
+  letter-spacing: 1px;
+}
+
+/* Submenu indentation */
+#adminmenu
+  .wp-submenu
+  a[href*="wp-activity-logger-pro"]:not([href*="wp-activity-logger-pro-analytics"]):not(
+    [href*="wp-activity-logger-pro-threat-detection"]
+  ):not([href*="wp-activity-logger-pro-server"]) {
+  padding-left: 12px;
+}
+
+/* Active menu item */
+#adminmenu .wp-submenu li.current a {
+  color: white !important;
+  font-weight: 500;
+}
+
+/* Hover states */
+#adminmenu .wp-submenu a:hover {
+  color: white !important;
+}
+
+/* Custom triangle indicator for active main menu */
+#adminmenu li.toplevel_page_wp-activity-logger-pro.wp-has-current-submenu > a::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border-style: solid;
+  border-width: 8px 8px 8px 0;
+  border-color: transparent #f0f0f1 transparent transparent;
+}
