@@ -7,237 +7,161 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-global $wpdb;
-
-$wp_version = get_bloginfo('version');
-$php_version = phpversion();
-$mysql_version = $wpdb->db_version();
-$server_software = isset($_SERVER['SERVER_SOFTWARE']) ? sanitize_text_field(wp_unslash($_SERVER['SERVER_SOFTWARE'])) : '';
-$memory_limit = ini_get('memory_limit');
-$max_execution_time = ini_get('max_execution_time');
-$post_max_size = ini_get('post_max_size');
-$upload_max_filesize = ini_get('upload_max_filesize');
-$max_input_vars = ini_get('max_input_vars');
-
-$plugin_data = get_plugin_data(WPAL_PLUGIN_FILE);
-WPAL_Helpers::init();
-$table_name = WPAL_Helpers::$db_table;
-$table_exists = $wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name;
-$table_count = $table_exists ? (int) $wpdb->get_var("SELECT COUNT(*) FROM $table_name") : 0;
-$table_size = $table_exists ? $wpdb->get_var("SELECT SUM(data_length + index_length) FROM information_schema.TABLES WHERE table_schema = DATABASE() AND table_name = '$table_name'") : 0;
-
-$ip_details = WPAL_Helpers::get_ip_details();
-$proxy_chain = !empty($ip_details['raw_headers']['HTTP_X_FORWARDED_FOR']) ? $ip_details['raw_headers']['HTTP_X_FORWARDED_FOR'] : '';
-
-$wp_debug = defined('WP_DEBUG') && WP_DEBUG;
-$wp_debug_log = defined('WP_DEBUG_LOG') ? WP_DEBUG_LOG : false;
-$debug_log_enabled = (true === $wp_debug_log || (is_string($wp_debug_log) && '' !== $wp_debug_log));
-$debug_log_path = WP_CONTENT_DIR . '/debug.log';
-if (is_string($wp_debug_log) && '' !== $wp_debug_log) {
-    $debug_log_path = $wp_debug_log;
+$diagnostics = wp_activity_logger_pro()->diagnostics;
+$report = $diagnostics->get_latest_report();
+if (empty($report)) {
+    $report = $diagnostics->run_diagnostics(false);
 }
 
-$debug_log_exists = file_exists($debug_log_path);
-$debug_log_readable = $debug_log_exists && is_readable($debug_log_path);
-$debug_log_size = $debug_log_exists ? filesize($debug_log_path) : 0;
+$history = $diagnostics->get_scan_history(8);
+$client_errors = get_option(WPAL_Diagnostics::CLIENT_ERRORS_OPTION, array());
+$client_errors = is_array($client_errors) ? array_slice($client_errors, 0, 5) : array();
+$safe_mode = !empty($report['safe_mode']) && is_array($report['safe_mode']) ? $report['safe_mode'] : $diagnostics->get_safe_mode_status();
+$issues = !empty($report['issues']) && is_array($report['issues']) ? $report['issues'] : array();
+$counts = !empty($report['counts']) && is_array($report['counts']) ? $report['counts'] : array(
+    'critical' => 0,
+    'warning' => 0,
+    'info' => 0,
+);
+$inventory = !empty($report['inventory']) && is_array($report['inventory']) ? $report['inventory'] : array();
+$timeline = !empty($report['timeline']) && is_array($report['timeline']) ? $report['timeline'] : array();
+$correlations = !empty($report['correlations']) && is_array($report['correlations']) ? $report['correlations'] : array();
+$conflict_plan = !empty($report['conflict_plan']) && is_array($report['conflict_plan']) ? $report['conflict_plan'] : array();
+$active_plugins = !empty($inventory['active_plugins']) && is_array($inventory['active_plugins']) ? $inventory['active_plugins'] : array();
+$active_theme = !empty($inventory['active_theme']) && is_array($inventory['active_theme']) ? $inventory['active_theme'] : array();
+$health_score = isset($report['health_score']) ? (int) $report['health_score'] : 100;
 
-$read_debug_tail = static function($path, $max_bytes = 65536, $max_lines = 40) {
-    if (!file_exists($path) || !is_readable($path)) {
-        return '';
-    }
+$severity_labels = array(
+    'critical' => __('Critical', 'wp-activity-logger-pro'),
+    'warning' => __('Warning', 'wp-activity-logger-pro'),
+    'info' => __('Info', 'wp-activity-logger-pro'),
+);
 
-    $size = filesize($path);
-    if (false === $size || 0 === $size) {
-        return '';
-    }
+$confidence_labels = array(
+    'high' => __('High confidence', 'wp-activity-logger-pro'),
+    'medium' => __('Medium confidence', 'wp-activity-logger-pro'),
+    'advanced' => __('Advanced fix', 'wp-activity-logger-pro'),
+);
 
-    $handle = fopen($path, 'rb');
-    if (!$handle) {
-        return '';
-    }
-
-    $seek = min($max_bytes, $size);
-    fseek($handle, -$seek, SEEK_END);
-    $contents = fread($handle, $seek);
-    fclose($handle);
-
-    if (false === $contents) {
-        return '';
-    }
-
-    $contents = ltrim($contents);
-    $lines = preg_split('/\r\n|\r|\n/', $contents);
-    $lines = array_slice(array_filter($lines, 'strlen'), -$max_lines);
-
-    return implode("\n", $lines);
-};
-
-$debug_log_tail = $debug_log_readable ? $read_debug_tail($debug_log_path) : '';
-
-$issues = array();
-
-if (version_compare($php_version, '7.4', '<')) {
-    $issues[] = array(
-        'title' => __('Old PHP Version', 'wp-activity-logger-pro'),
-        'summary' => __('Your server is running an older PHP version, which can cause compatibility and performance problems.', 'wp-activity-logger-pro'),
-        'solution' => __('Ask your hosting provider to upgrade PHP to 8.0 or newer.', 'wp-activity-logger-pro'),
-    );
+$score_tone = 'good';
+if ($health_score < 60) {
+    $score_tone = 'danger';
+} elseif ($health_score < 80) {
+    $score_tone = 'warning';
 }
 
-if (!$table_exists) {
-    $issues[] = array(
-        'title' => __('Missing Log Table', 'wp-activity-logger-pro'),
-        'summary' => __('The activity log table is missing, so new events may not be saved at all.', 'wp-activity-logger-pro'),
-        'solution' => __('Deactivate and reactivate the plugin once to recreate its database tables.', 'wp-activity-logger-pro'),
-    );
-}
-
-if (wp_convert_hr_to_bytes($memory_limit) < 64 * 1024 * 1024) {
-    $issues[] = array(
-        'title' => __('Low PHP Memory', 'wp-activity-logger-pro'),
-        'summary' => __('Your PHP memory limit is low for charts, exports, and heavier admin screens.', 'wp-activity-logger-pro'),
-        'solution' => __('Raise the WordPress memory limit to at least 128M if your host allows it.', 'wp-activity-logger-pro'),
-    );
-}
-
-if (empty($ip_details['ip'])) {
-    $issues[] = array(
-        'title' => __('Visitor IP Not Detected', 'wp-activity-logger-pro'),
-        'summary' => __('The plugin could not find a valid client IP from the current request headers.', 'wp-activity-logger-pro'),
-        'solution' => __('If you use Cloudflare, a proxy, or a load balancer, make sure it forwards a real client IP header such as CF-Connecting-IP, X-Forwarded-For, or X-Real-IP.', 'wp-activity-logger-pro'),
-    );
-} elseif ('Remote Address' === $ip_details['source'] && !$ip_details['is_public']) {
-    $issues[] = array(
-        'title' => __('Only Server or Private IP Found', 'wp-activity-logger-pro'),
-        'summary' => __('The plugin only sees a private or server-side address, which usually means the real client IP is being hidden by a proxy.', 'wp-activity-logger-pro'),
-        'solution' => __('Configure your proxy or CDN to pass the original visitor IP to PHP. Most setups use CF-Connecting-IP, True-Client-IP, X-Forwarded-For, or X-Real-IP.', 'wp-activity-logger-pro'),
-    );
-}
-
-if (!$wp_debug) {
-    $issues[] = array(
-        'title' => __('WordPress Debug Mode Is Off', 'wp-activity-logger-pro'),
-        'summary' => __('Debug logging is disabled, so PHP notices and plugin errors will not be collected in a WordPress log file.', 'wp-activity-logger-pro'),
-        'solution' => __('Add define(\'WP_DEBUG\', true); and define(\'WP_DEBUG_LOG\', true); to wp-config.php while troubleshooting.', 'wp-activity-logger-pro'),
-    );
-} elseif (!$debug_log_enabled) {
-    $issues[] = array(
-        'title' => __('Debug Log Output Is Off', 'wp-activity-logger-pro'),
-        'summary' => __('WordPress debug mode is enabled, but writing to debug.log is disabled.', 'wp-activity-logger-pro'),
-        'solution' => __('Set define(\'WP_DEBUG_LOG\', true); in wp-config.php to store errors in wp-content/debug.log.', 'wp-activity-logger-pro'),
-    );
-} elseif ($debug_log_enabled && !$debug_log_exists) {
-    $issues[] = array(
-        'title' => __('Debug Log File Not Found Yet', 'wp-activity-logger-pro'),
-        'summary' => __('Debug logging is enabled, but the log file does not exist yet. This often means no PHP warning has been written yet, or the file path is not writable.', 'wp-activity-logger-pro'),
-        'solution' => __('Trigger the issue again, then recheck this screen. If the file still does not appear, verify that WordPress can write to the configured log path.', 'wp-activity-logger-pro'),
-    );
-} elseif ($debug_log_exists && !$debug_log_readable) {
-    $issues[] = array(
-        'title' => __('Debug Log Is Not Readable', 'wp-activity-logger-pro'),
-        'summary' => __('The debug log file exists, but PHP cannot read it from this admin screen.', 'wp-activity-logger-pro'),
-        'solution' => __('Fix file permissions so the web server user can read the debug log path.', 'wp-activity-logger-pro'),
-    );
-}
-
-if (isset($_POST['wpal_run_diagnostics'])) {
-    check_admin_referer('wpal_diagnostics_nonce');
-    WPAL_Helpers::log_activity('diagnostics_test', __('Diagnostics test log entry', 'wp-activity-logger-pro'), 'info');
-}
+$assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] : __('Ask things like “Why is my site slow?” or “What should I disable first?”', 'wp-activity-logger-pro');
 ?>
 
 <div class="wrap wpal-wrap">
     <section class="wpal-hero wpal-hero-compact">
         <div>
-            <p class="wpal-eyebrow"><?php esc_html_e('System checks', 'wp-activity-logger-pro'); ?></p>
-            <h1 class="wpal-page-title"><?php esc_html_e('Diagnostics', 'wp-activity-logger-pro'); ?></h1>
-            <p class="wpal-hero-copy"><?php esc_html_e('This page shows the easiest way to understand what the plugin can currently detect, what is failing, and how to fix each issue.', 'wp-activity-logger-pro'); ?></p>
+            <p class="wpal-eyebrow"><?php esc_html_e('System scanner', 'wp-activity-logger-pro'); ?></p>
+            <h1 class="wpal-page-title"><?php esc_html_e('Diagnostics & Conflict Detection', 'wp-activity-logger-pro'); ?></h1>
+            <p class="wpal-hero-copy"><?php esc_html_e('Scan the site, explain technical problems in plain language, test fixes privately in admin-only safe mode, and track when issues started appearing.', 'wp-activity-logger-pro'); ?></p>
         </div>
         <div class="wpal-hero-actions">
-            <form method="post">
-                <?php wp_nonce_field('wpal_diagnostics_nonce'); ?>
-                <button type="submit" name="wpal_run_diagnostics" class="wpal-btn wpal-btn-primary"><?php esc_html_e('Run Diagnostics', 'wp-activity-logger-pro'); ?></button>
-            </form>
+            <button type="button" class="wpal-btn wpal-btn-primary" id="wpal-run-diagnostics"><?php esc_html_e('Run Full Scan', 'wp-activity-logger-pro'); ?></button>
+            <?php if (!empty($safe_mode['enabled'])) : ?>
+                <button type="button" class="wpal-btn wpal-btn-outline-danger" id="wpal-disable-safe-mode"><?php esc_html_e('Disable Safe Mode', 'wp-activity-logger-pro'); ?></button>
+            <?php else : ?>
+                <button type="button" class="wpal-btn wpal-btn-secondary" id="wpal-enable-safe-mode"><?php esc_html_e('Start Safe Mode', 'wp-activity-logger-pro'); ?></button>
+            <?php endif; ?>
         </div>
     </section>
 
-    <?php if (!empty($issues)) : ?>
-        <section class="wpal-panel">
-            <div class="wpal-panel-head">
-                <div>
-                    <h2><?php esc_html_e('Easy Fix Guide', 'wp-activity-logger-pro'); ?></h2>
-                    <p><?php esc_html_e('Each item below explains the issue in plain language and gives the most likely fix.', 'wp-activity-logger-pro'); ?></p>
-                </div>
-            </div>
-            <div class="wpal-stack">
-                <?php foreach ($issues as $issue) : ?>
-                    <div class="wpal-detail-card">
-                        <h3><?php echo esc_html($issue['title']); ?></h3>
-                        <p><?php echo esc_html($issue['summary']); ?></p>
-                        <div class="wpal-note">
-                            <strong><?php esc_html_e('Possible solution:', 'wp-activity-logger-pro'); ?></strong>
-                            <?php echo ' ' . esc_html($issue['solution']); ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </section>
-    <?php else : ?>
-        <section class="wpal-panel">
-            <div class="wpal-empty-panel">
-                <h2><?php esc_html_e('No active diagnostics issues found', 'wp-activity-logger-pro'); ?></h2>
-                <p><?php esc_html_e('The main environment checks, IP detection, and debug log settings all look healthy right now.', 'wp-activity-logger-pro'); ?></p>
-            </div>
-        </section>
-    <?php endif; ?>
+    <section class="wpal-stats-grid" id="wpal-diagnostics-summary">
+        <article class="wpal-stat-card wpal-score-card wpal-score-card-<?php echo esc_attr($score_tone); ?>">
+            <span class="wpal-stat-label"><?php esc_html_e('Health Score', 'wp-activity-logger-pro'); ?></span>
+            <span class="wpal-stat-value"><?php echo esc_html($health_score); ?></span>
+            <span class="wpal-stat-meta"><?php printf(esc_html__('Last scan: %s', 'wp-activity-logger-pro'), !empty($report['generated_at']) ? esc_html(WPAL_Helpers::format_datetime($report['generated_at'])) : esc_html__('Not saved yet', 'wp-activity-logger-pro')); ?></span>
+        </article>
+        <article class="wpal-stat-card">
+            <span class="wpal-stat-label"><?php esc_html_e('Critical Issues', 'wp-activity-logger-pro'); ?></span>
+            <span class="wpal-stat-value"><?php echo esc_html((int) $counts['critical']); ?></span>
+            <span class="wpal-stat-meta"><?php esc_html_e('Immediate breakage or severe risk', 'wp-activity-logger-pro'); ?></span>
+        </article>
+        <article class="wpal-stat-card">
+            <span class="wpal-stat-label"><?php esc_html_e('Warnings', 'wp-activity-logger-pro'); ?></span>
+            <span class="wpal-stat-value"><?php echo esc_html((int) $counts['warning']); ?></span>
+            <span class="wpal-stat-meta"><?php esc_html_e('Likely instability or conflict signals', 'wp-activity-logger-pro'); ?></span>
+        </article>
+        <article class="wpal-stat-card">
+            <span class="wpal-stat-label"><?php esc_html_e('Inventory', 'wp-activity-logger-pro'); ?></span>
+            <span class="wpal-stat-value"><?php echo esc_html(count($active_plugins)); ?></span>
+            <span class="wpal-stat-meta"><?php printf(esc_html__('Plugins checked, theme: %s', 'wp-activity-logger-pro'), !empty($active_theme['name']) ? esc_html($active_theme['name']) : esc_html__('Unknown', 'wp-activity-logger-pro')); ?></span>
+        </article>
+    </section>
 
     <section class="wpal-grid wpal-grid-2">
         <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
-                    <h2><?php esc_html_e('IP Detection', 'wp-activity-logger-pro'); ?></h2>
-                    <p><?php esc_html_e('See exactly which header produced the current visitor IP and how trustworthy it looks.', 'wp-activity-logger-pro'); ?></p>
+                    <h2><?php esc_html_e('Issue List', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('Every issue is translated into plain language, then paired with the safest next steps.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-stack">
-                <div class="wpal-detail-card">
-                    <dl>
-                        <dt><?php esc_html_e('Detected IP', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($ip_details['ip'] ? $ip_details['ip'] : __('Unavailable', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('Source', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($ip_details['source'] ? $ip_details['source'] : __('None', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('Public IP', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($ip_details['ip'] ? ($ip_details['is_public'] ? __('Yes', 'wp-activity-logger-pro') : __('No', 'wp-activity-logger-pro')) : __('Unknown', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('Proxy chain', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($proxy_chain ? $proxy_chain : __('No X-Forwarded-For header found on this request.', 'wp-activity-logger-pro')); ?></dd>
-                    </dl>
-                </div>
-
-                <div class="wpal-note">
-                    <?php
-                    if (empty($ip_details['ip'])) {
-                        esc_html_e('Easy explanation: the request did not include a usable client IP header, so the plugin cannot store the real visitor address yet.', 'wp-activity-logger-pro');
-                    } elseif ($ip_details['is_public']) {
-                        printf(
-                            /* translators: %s: header source label */
-                            esc_html__('Easy explanation: the plugin successfully resolved a public visitor IP using %s.', 'wp-activity-logger-pro'),
-                            esc_html($ip_details['source'])
-                        );
-                    } else {
-                        printf(
-                            /* translators: %s: header source label */
-                            esc_html__('Easy explanation: the plugin only found a private or local IP from %s. This usually happens on local sites, reverse proxies, or load balancers when the real client IP is not forwarded.', 'wp-activity-logger-pro'),
-                            esc_html($ip_details['source'])
-                        );
-                    }
-                    ?>
-                </div>
-
-                <?php if (!empty($ip_details['raw_headers'])) : ?>
-                    <div>
-                        <h3><?php esc_html_e('Raw IP Headers Seen By PHP', 'wp-activity-logger-pro'); ?></h3>
-                        <pre class="wpal-code-block"><?php echo esc_html(wp_json_encode($ip_details['raw_headers'], JSON_PRETTY_PRINT)); ?></pre>
+            <div class="wpal-stack" id="wpal-diagnostics-issues">
+                <?php if (empty($issues)) : ?>
+                    <div class="wpal-empty-panel">
+                        <h3><?php esc_html_e('No active issues in the latest scan', 'wp-activity-logger-pro'); ?></h3>
+                        <p><?php esc_html_e('Run a fresh scan after reproducing the problem if the site still feels unstable.', 'wp-activity-logger-pro'); ?></p>
                     </div>
+                <?php else : ?>
+                    <?php foreach ($issues as $issue) : ?>
+                        <?php
+                        $severity = isset($issue['severity']) ? $issue['severity'] : 'info';
+                        $badge_class = 'wpal-badge-info';
+                        if ('critical' === $severity) {
+                            $badge_class = 'wpal-badge-danger';
+                        } elseif ('warning' === $severity) {
+                            $badge_class = 'wpal-badge-warning';
+                        }
+                        ?>
+                        <article class="wpal-detail-card wpal-issue-card">
+                            <div class="wpal-panel-head">
+                                <div>
+                                    <h3><?php echo esc_html($issue['message']); ?></h3>
+                                    <p><?php echo esc_html($issue['explanation']); ?></p>
+                                </div>
+                                <span class="wpal-badge <?php echo esc_attr($badge_class); ?>"><?php echo esc_html($severity_labels[$severity]); ?></span>
+                            </div>
+
+                            <?php if (!empty($issue['page']) || !empty($issue['raw_error'])) : ?>
+                                <div class="wpal-note">
+                                    <?php if (!empty($issue['page'])) : ?>
+                                        <strong><?php esc_html_e('Seen on:', 'wp-activity-logger-pro'); ?></strong>
+                                        <?php echo ' ' . esc_html($issue['page']); ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($issue['raw_error'])) : ?>
+                                        <div><strong><?php esc_html_e('Raw signal:', 'wp-activity-logger-pro'); ?></strong> <?php echo esc_html($issue['raw_error']); ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($issue['plugins'])) : ?>
+                                <div class="wpal-pill-row">
+                                    <?php foreach ((array) $issue['plugins'] as $plugin_slug) : ?>
+                                        <span class="wpal-pill"><?php echo esc_html($plugin_slug); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($issue['suggestions'])) : ?>
+                                <div class="wpal-suggestion-grid">
+                                    <?php foreach ((array) $issue['suggestions'] as $suggestion) : ?>
+                                        <div class="wpal-suggestion-card">
+                                            <div class="wpal-suggestion-head">
+                                                <strong><?php echo esc_html($suggestion['title']); ?></strong>
+                                                <span class="wpal-meta-pill"><?php echo esc_html($confidence_labels[$suggestion['confidence']]); ?></span>
+                                            </div>
+                                            <p><?php echo esc_html($suggestion['description']); ?></p>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </article>
+                    <?php endforeach; ?>
                 <?php endif; ?>
             </div>
         </article>
@@ -245,57 +169,191 @@ if (isset($_POST['wpal_run_diagnostics'])) {
         <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
-                    <h2><?php esc_html_e('Debug Log', 'wp-activity-logger-pro'); ?></h2>
-                    <p><?php esc_html_e('Check whether WordPress debugging is enabled and preview the latest lines from the log file.', 'wp-activity-logger-pro'); ?></p>
+                    <h2><?php esc_html_e('Safe Mode Debugging', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('Disable selected plugins only for your own admin session so visitors never see the experiment.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-stack">
-                <div class="wpal-detail-card">
-                    <dl>
-                        <dt><?php esc_html_e('WP_DEBUG', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($wp_debug ? __('Enabled', 'wp-activity-logger-pro') : __('Disabled', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('WP_DEBUG_LOG', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($debug_log_enabled ? __('Enabled', 'wp-activity-logger-pro') : __('Disabled', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('Log path', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><span class="wpal-code-inline"><?php echo esc_html($debug_log_path); ?></span></dd>
-                        <dt><?php esc_html_e('File exists', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($debug_log_exists ? __('Yes', 'wp-activity-logger-pro') : __('No', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('Readable', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($debug_log_exists ? ($debug_log_readable ? __('Yes', 'wp-activity-logger-pro') : __('No', 'wp-activity-logger-pro')) : __('Not applicable', 'wp-activity-logger-pro')); ?></dd>
-                        <dt><?php esc_html_e('File size', 'wp-activity-logger-pro'); ?></dt>
-                        <dd><?php echo esc_html($debug_log_exists && false !== $debug_log_size ? size_format($debug_log_size) : __('N/A', 'wp-activity-logger-pro')); ?></dd>
-                    </dl>
-                </div>
 
-                <div class="wpal-note">
+            <div class="wpal-note" id="wpal-safe-mode-status">
+                <?php if (!empty($safe_mode['enabled'])) : ?>
                     <?php
-                    if (!$wp_debug) {
-                        esc_html_e('Easy explanation: WordPress debugging is turned off, so no debug log will be generated for plugin or PHP issues.', 'wp-activity-logger-pro');
-                    } elseif (!$debug_log_enabled) {
-                        esc_html_e('Easy explanation: WordPress is in debug mode, but it is not writing errors to a log file yet.', 'wp-activity-logger-pro');
-                    } elseif (!$debug_log_exists) {
-                        esc_html_e('Easy explanation: debug logging is enabled, but the file has not been created yet. That usually means no error has been written yet, or WordPress cannot write to the configured location.', 'wp-activity-logger-pro');
-                    } elseif (!$debug_log_readable) {
-                        esc_html_e('Easy explanation: the log file exists, but the server user cannot read it from this screen.', 'wp-activity-logger-pro');
-                    } elseif ('' === $debug_log_tail) {
-                        esc_html_e('Easy explanation: the debug log is available, but it is currently empty.', 'wp-activity-logger-pro');
-                    } else {
-                        esc_html_e('Easy explanation: the debug log is active and the latest lines are shown below for quick troubleshooting.', 'wp-activity-logger-pro');
-                    }
+                    printf(
+                        esc_html__('Safe mode is active for this admin session. %d plugin(s) are hidden only for you.', 'wp-activity-logger-pro'),
+                        count((array) $safe_mode['plugins'])
+                    );
                     ?>
-                </div>
+                <?php else : ?>
+                    <?php esc_html_e('Safe mode is currently off. Select one or more plugins below if you want to test the site privately without them.', 'wp-activity-logger-pro'); ?>
+                <?php endif; ?>
+            </div>
 
-                <?php if ('' !== $debug_log_tail) : ?>
-                    <div>
-                        <h3><?php esc_html_e('Latest Debug Log Lines', 'wp-activity-logger-pro'); ?></h3>
-                        <pre class="wpal-code-block"><?php echo esc_html($debug_log_tail); ?></pre>
+            <div class="wpal-form-stack">
+                <label>
+                    <span><?php esc_html_e('Plugins to hide in your admin session', 'wp-activity-logger-pro'); ?></span>
+                    <select multiple class="wpal-input" id="wpal-safe-mode-plugins">
+                        <?php foreach ($active_plugins as $plugin) : ?>
+                            <option value="<?php echo esc_attr($plugin['file']); ?>" <?php selected(in_array($plugin['file'], (array) ($safe_mode['plugins'] ?? array()), true)); ?>>
+                                <?php
+                                printf(
+                                    '%1$s (%2$s)',
+                                    esc_html($plugin['name']),
+                                    esc_html($plugin['version'] ? $plugin['version'] : $plugin['file'])
+                                );
+                                ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+            </div>
+
+            <div class="wpal-inline-actions">
+                <button type="button" class="wpal-btn wpal-btn-secondary" id="wpal-enable-safe-mode-inline"><?php esc_html_e('Enable Safe Mode With Selection', 'wp-activity-logger-pro'); ?></button>
+                <button type="button" class="wpal-btn wpal-btn-outline-danger" id="wpal-disable-safe-mode-inline"><?php esc_html_e('Restore Normal Session', 'wp-activity-logger-pro'); ?></button>
+            </div>
+
+            <?php if (!empty($conflict_plan['group_a']) || !empty($conflict_plan['group_b'])) : ?>
+                <div class="wpal-note">
+                    <strong><?php esc_html_e('Binary conflict test', 'wp-activity-logger-pro'); ?></strong>
+                    <?php echo ' ' . esc_html($conflict_plan['summary']); ?>
+                </div>
+                <div class="wpal-suggestion-grid">
+                    <?php if (!empty($conflict_plan['group_a'])) : ?>
+                        <div class="wpal-suggestion-card">
+                            <div class="wpal-suggestion-head">
+                                <strong><?php esc_html_e('Test Group A Disabled', 'wp-activity-logger-pro'); ?></strong>
+                                <span class="wpal-meta-pill"><?php esc_html_e('Batch 1', 'wp-activity-logger-pro'); ?></span>
+                            </div>
+                            <p><?php echo esc_html(implode(', ', wp_list_pluck((array) $conflict_plan['group_a'], 'name'))); ?></p>
+                            <button
+                                type="button"
+                                class="wpal-btn wpal-btn-outline-primary wpal-btn-sm wpal-safe-mode-preset"
+                                data-plugins="<?php echo esc_attr(wp_json_encode(wp_list_pluck((array) $conflict_plan['group_a'], 'file'))); ?>"
+                            ><?php esc_html_e('Disable This Group In Safe Mode', 'wp-activity-logger-pro'); ?></button>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (!empty($conflict_plan['group_b'])) : ?>
+                        <div class="wpal-suggestion-card">
+                            <div class="wpal-suggestion-head">
+                                <strong><?php esc_html_e('Test Group B Disabled', 'wp-activity-logger-pro'); ?></strong>
+                                <span class="wpal-meta-pill"><?php esc_html_e('Batch 2', 'wp-activity-logger-pro'); ?></span>
+                            </div>
+                            <p><?php echo esc_html(implode(', ', wp_list_pluck((array) $conflict_plan['group_b'], 'name'))); ?></p>
+                            <button
+                                type="button"
+                                class="wpal-btn wpal-btn-outline-primary wpal-btn-sm wpal-safe-mode-preset"
+                                data-plugins="<?php echo esc_attr(wp_json_encode(wp_list_pluck((array) $conflict_plan['group_b'], 'file'))); ?>"
+                            ><?php esc_html_e('Disable This Group In Safe Mode', 'wp-activity-logger-pro'); ?></button>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+        </article>
+    </section>
+
+    <section class="wpal-grid wpal-grid-2">
+        <article class="wpal-panel">
+            <div class="wpal-panel-head">
+                <div>
+                    <h2><?php esc_html_e('Issue Timeline', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('See when a problem first appeared, how often it has repeated, and whether it lines up with changes on the site.', 'wp-activity-logger-pro'); ?></p>
+                </div>
+            </div>
+            <div class="wpal-list" id="wpal-diagnostics-timeline">
+                <?php if (empty($timeline)) : ?>
+                    <div class="wpal-empty-panel">
+                        <p><?php esc_html_e('No tracked issue timeline yet. Run a saved scan to start building history.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 <?php else : ?>
-                    <div class="wpal-empty-panel">
-                        <h3><?php esc_html_e('No debug lines to show', 'wp-activity-logger-pro'); ?></h3>
-                        <p><?php esc_html_e('Once WordPress writes notices, warnings, or errors to the configured log file, they will appear here.', 'wp-activity-logger-pro'); ?></p>
-                    </div>
+                    <?php foreach ($timeline as $entry) : ?>
+                        <div class="wpal-list-row">
+                            <div>
+                                <strong><?php echo esc_html($entry['message']); ?></strong>
+                                <div class="wpal-list-subtext">
+                                    <?php
+                                    printf(
+                                        esc_html__('First seen %1$s, last seen %2$s', 'wp-activity-logger-pro'),
+                                        esc_html(WPAL_Helpers::format_datetime($entry['first_seen'])),
+                                        esc_html(WPAL_Helpers::format_datetime($entry['last_seen']))
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <div class="wpal-list-value">
+                                <?php
+                                printf(
+                                    esc_html__('%d scans', 'wp-activity-logger-pro'),
+                                    isset($entry['count']) ? (int) $entry['count'] : 1
+                                );
+                                ?>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
                 <?php endif; ?>
+            </div>
+        </article>
+
+        <article class="wpal-panel">
+            <div class="wpal-panel-head">
+                <div>
+                    <h2><?php esc_html_e('Change Correlation', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('These pair the first appearance of a problem with nearby updates or configuration changes.', 'wp-activity-logger-pro'); ?></p>
+                </div>
+            </div>
+            <div class="wpal-list">
+                <?php if (empty($correlations)) : ?>
+                    <div class="wpal-empty-panel">
+                        <p><?php esc_html_e('No strong issue-to-change correlation has been found yet.', 'wp-activity-logger-pro'); ?></p>
+                    </div>
+                <?php else : ?>
+                    <?php foreach ($correlations as $correlation) : ?>
+                        <div class="wpal-list-row">
+                            <div>
+                                <strong><?php echo esc_html($correlation['issue']); ?></strong>
+                                <div class="wpal-list-subtext">
+                                    <?php
+                                    printf(
+                                        esc_html__('Started near %1$s at %2$s', 'wp-activity-logger-pro'),
+                                        esc_html($correlation['change_label']),
+                                        esc_html(WPAL_Helpers::format_datetime($correlation['change_time']))
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <span class="wpal-meta-pill">
+                                <?php
+                                printf(
+                                    esc_html__('%s hours apart', 'wp-activity-logger-pro'),
+                                    esc_html($correlation['delta_hours'])
+                                );
+                                ?>
+                            </span>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+
+        <article class="wpal-panel">
+            <div class="wpal-panel-head">
+                <div>
+                    <h2><?php esc_html_e('AI Assistant Preview', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('This is a lightweight contextual assistant built from the current scan data. It is meant to guide the next debugging step quickly.', 'wp-activity-logger-pro'); ?></p>
+                </div>
+            </div>
+
+            <div class="wpal-form-stack">
+                <label>
+                    <span><?php esc_html_e('Ask a question', 'wp-activity-logger-pro'); ?></span>
+                    <textarea class="wpal-input" id="wpal-diagnostics-question" placeholder="<?php echo esc_attr($assistant_hint); ?>"></textarea>
+                </label>
+            </div>
+
+            <div class="wpal-inline-actions">
+                <button type="button" class="wpal-btn wpal-btn-primary" id="wpal-ask-diagnostics-ai"><?php esc_html_e('Get Answer', 'wp-activity-logger-pro'); ?></button>
+            </div>
+
+            <div class="wpal-note" id="wpal-diagnostics-answer">
+                <?php esc_html_e('Ask about slowness, conflicts, what to disable first, or what the latest scan means.', 'wp-activity-logger-pro'); ?>
             </div>
         </article>
     </section>
@@ -304,46 +362,111 @@ if (isset($_POST['wpal_run_diagnostics'])) {
         <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
-                    <h2><?php esc_html_e('System Information', 'wp-activity-logger-pro'); ?></h2>
-                    <p><?php esc_html_e('Core environment values currently detected by WordPress and PHP.', 'wp-activity-logger-pro'); ?></p>
+                    <h2><?php esc_html_e('Recent Browser & Runtime Signals', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('JavaScript errors collected from the browser can reveal conflicts that never make it into PHP logs.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-table-wrap">
-                <table class="wpal-table wpal-kv-table">
-                    <tbody>
-                        <tr><th><?php esc_html_e('WordPress version', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($wp_version); ?></td></tr>
-                        <tr><th><?php esc_html_e('PHP version', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($php_version); ?></td></tr>
-                        <tr><th><?php esc_html_e('MySQL version', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($mysql_version); ?></td></tr>
-                        <tr><th><?php esc_html_e('Server software', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($server_software); ?></td></tr>
-                        <tr><th><?php esc_html_e('Memory limit', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($memory_limit); ?></td></tr>
-                        <tr><th><?php esc_html_e('Max execution time', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($max_execution_time); ?>s</td></tr>
-                        <tr><th><?php esc_html_e('Post max size', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($post_max_size); ?></td></tr>
-                        <tr><th><?php esc_html_e('Upload max filesize', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($upload_max_filesize); ?></td></tr>
-                        <tr><th><?php esc_html_e('Max input vars', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($max_input_vars); ?></td></tr>
-                    </tbody>
-                </table>
+            <div class="wpal-list">
+                <?php if (empty($client_errors)) : ?>
+                    <div class="wpal-empty-panel">
+                        <p><?php esc_html_e('No browser-side runtime errors have been captured recently.', 'wp-activity-logger-pro'); ?></p>
+                    </div>
+                <?php else : ?>
+                    <?php foreach ($client_errors as $entry) : ?>
+                        <div class="wpal-list-row">
+                            <div>
+                                <strong><?php echo esc_html($entry['message']); ?></strong>
+                                <div class="wpal-list-subtext">
+                                    <?php
+                                    printf(
+                                        esc_html__('%1$s on %2$s', 'wp-activity-logger-pro'),
+                                        esc_html(WPAL_Helpers::format_datetime($entry['time'])),
+                                        esc_html(!empty($entry['page']) ? $entry['page'] : __('Unknown page', 'wp-activity-logger-pro'))
+                                    );
+                                    ?>
+                                </div>
+                            </div>
+                            <span class="wpal-meta-pill"><?php echo esc_html(!empty($entry['source']) ? $entry['source'] : __('Browser', 'wp-activity-logger-pro')); ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </article>
 
         <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
-                    <h2><?php esc_html_e('Plugin Information', 'wp-activity-logger-pro'); ?></h2>
-                    <p><?php esc_html_e('Useful metadata for support and debugging.', 'wp-activity-logger-pro'); ?></p>
+                    <h2><?php esc_html_e('Recent Scan History', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('Compare health score changes over time and see when the issue count started climbing.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-table-wrap">
-                <table class="wpal-table wpal-kv-table">
-                    <tbody>
-                        <tr><th><?php esc_html_e('Plugin version', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($plugin_data['Version']); ?></td></tr>
-                        <tr><th><?php esc_html_e('Author', 'wp-activity-logger-pro'); ?></th><td><?php echo wp_kses_post($plugin_data['Author']); ?></td></tr>
-                        <tr><th><?php esc_html_e('Plugin URI', 'wp-activity-logger-pro'); ?></th><td><a href="<?php echo esc_url($plugin_data['PluginURI']); ?>" target="_blank" rel="noreferrer"><?php echo esc_html($plugin_data['PluginURI']); ?></a></td></tr>
-                        <tr><th><?php esc_html_e('Database table', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($table_name); ?> <?php echo $table_exists ? esc_html__('(exists)', 'wp-activity-logger-pro') : esc_html__('(missing)', 'wp-activity-logger-pro'); ?></td></tr>
-                        <tr><th><?php esc_html_e('Log count', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html(number_format_i18n($table_count)); ?></td></tr>
-                        <tr><th><?php esc_html_e('Database size', 'wp-activity-logger-pro'); ?></th><td><?php echo esc_html($table_size ? size_format($table_size) : 'N/A'); ?></td></tr>
-                    </tbody>
-                </table>
+            <div class="wpal-list" id="wpal-diagnostics-history">
+                <?php if (empty($history)) : ?>
+                    <div class="wpal-empty-panel">
+                        <p><?php esc_html_e('No saved scan history yet. Run the scanner to create the first history point.', 'wp-activity-logger-pro'); ?></p>
+                    </div>
+                <?php else : ?>
+                    <?php foreach ($history as $entry) : ?>
+                        <div class="wpal-list-row">
+                            <div>
+                                <strong>
+                                    <?php
+                                    printf(
+                                        esc_html__('Health score %d', 'wp-activity-logger-pro'),
+                                        isset($entry['health_score']) ? (int) $entry['health_score'] : 0
+                                    );
+                                    ?>
+                                </strong>
+                                <div class="wpal-list-subtext"><?php echo esc_html(WPAL_Helpers::format_datetime($entry['generated_at'])); ?></div>
+                            </div>
+                            <div class="wpal-history-inline">
+                                <span class="wpal-badge wpal-badge-danger"><?php echo esc_html((int) ($entry['counts']['critical'] ?? 0)); ?> <?php esc_html_e('critical', 'wp-activity-logger-pro'); ?></span>
+                                <span class="wpal-badge wpal-badge-warning"><?php echo esc_html((int) ($entry['counts']['warning'] ?? 0)); ?> <?php esc_html_e('warnings', 'wp-activity-logger-pro'); ?></span>
+                                <span class="wpal-badge wpal-badge-info"><?php echo esc_html((int) ($entry['counts']['info'] ?? 0)); ?> <?php esc_html_e('info', 'wp-activity-logger-pro'); ?></span>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </article>
+    </section>
+
+    <section class="wpal-panel">
+        <div class="wpal-panel-head">
+            <div>
+                <h2><?php esc_html_e('Scan Inventory', 'wp-activity-logger-pro'); ?></h2>
+                <p><?php esc_html_e('The scanner checks the active theme, plugin stack, server limits, WordPress debug status, REST API state, cron backlog, and the activity log database.', 'wp-activity-logger-pro'); ?></p>
+            </div>
+        </div>
+        <div class="wpal-grid wpal-grid-2">
+            <div class="wpal-detail-card">
+                <dl>
+                    <dt><?php esc_html_e('WordPress', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html($inventory['wordpress_version'] ?? ''); ?></dd>
+                    <dt><?php esc_html_e('PHP', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html($inventory['php_version'] ?? ''); ?></dd>
+                    <dt><?php esc_html_e('REST routes', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html(isset($inventory['rest_routes']) ? number_format_i18n((int) $inventory['rest_routes']) : 0); ?></dd>
+                    <dt><?php esc_html_e('Cron events', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html(isset($inventory['cron_total']) ? number_format_i18n((int) $inventory['cron_total']) : 0); ?></dd>
+                    <dt><?php esc_html_e('WP_DEBUG', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo !empty($inventory['wp_debug']) ? esc_html__('Enabled', 'wp-activity-logger-pro') : esc_html__('Disabled', 'wp-activity-logger-pro'); ?></dd>
+                </dl>
+            </div>
+            <div class="wpal-detail-card">
+                <dl>
+                    <dt><?php esc_html_e('Memory limit', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html($inventory['memory_limit'] ?? ''); ?></dd>
+                    <dt><?php esc_html_e('Max execution time', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html($inventory['max_execution_time'] ?? ''); ?></dd>
+                    <dt><?php esc_html_e('Log table', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo !empty($inventory['table_ready']) ? esc_html__('Ready', 'wp-activity-logger-pro') : esc_html__('Missing', 'wp-activity-logger-pro'); ?></dd>
+                    <dt><?php esc_html_e('Stored log rows', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html(isset($inventory['log_total']) ? number_format_i18n((int) $inventory['log_total']) : 0); ?></dd>
+                    <dt><?php esc_html_e('Active theme', 'wp-activity-logger-pro'); ?></dt>
+                    <dd><?php echo esc_html(!empty($active_theme['name']) ? $active_theme['name'] : __('Unknown', 'wp-activity-logger-pro')); ?></dd>
+                </dl>
+            </div>
+        </div>
     </section>
 </div>
