@@ -106,6 +106,16 @@ class WPAL_Settings {
         $sanitized['vulnerability_sources'] = isset($options['vulnerability_sources']) ? array_values(array_filter(array_map('sanitize_key', (array) $options['vulnerability_sources']))) : array();
         $sanitized['blocked_ips'] = isset($options['blocked_ips']) ? array_values(array_filter(array_map('sanitize_text_field', (array) $options['blocked_ips']))) : $defaults['blocked_ips'];
 
+        $normal_severities = array('info', 'warning', 'error');
+        if (count(array_intersect($normal_severities, $sanitized['suppressed_severities'])) === count($normal_severities)) {
+            $sanitized['suppressed_severities'] = array();
+        }
+
+        if (empty($sanitized['log_user_actions']) && empty($sanitized['log_system_actions'])) {
+            $sanitized['log_user_actions'] = 1;
+            $sanitized['log_system_actions'] = 1;
+        }
+
         if (!empty($options['default_export_format']) && in_array($options['default_export_format'], array('csv', 'json', 'xml', 'pdf'), true)) {
             $sanitized['default_export_format'] = $options['default_export_format'];
         }
