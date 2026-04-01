@@ -36,6 +36,7 @@ class WPAL_Tracker {
         
         // Track post actions
         add_action('transition_post_status', array($this, 'track_post_status'), 10, 3);
+        add_action('post_updated', array($this, 'track_post_update'), 10, 3);
         
         // Track comment actions
         add_action('wp_insert_comment', array($this, 'track_comment_insert'), 10, 2);
@@ -314,6 +315,70 @@ class WPAL_Tracker {
                 'location' => $geo_data['location'],
                 'country' => $geo_data['country'],
                 'country_code' => $geo_data['country_code']
+            )
+        );
+    }
+
+    /**
+     * Track updates when a post/page stays in the same status.
+     *
+     * @param int     $post_id Post ID.
+     * @param WP_Post $post_after Updated post object.
+     * @param WP_Post $post_before Previous post object.
+     */
+    public function track_post_update($post_id, $post_after, $post_before) {
+        if (!$post_after instanceof WP_Post || !$post_before instanceof WP_Post) {
+            return;
+        }
+
+        if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id) || 'auto-draft' === $post_after->post_status) {
+            return;
+        }
+
+        if ($post_after->post_status !== $post_before->post_status) {
+            return;
+        }
+
+        if ($post_after->post_modified_gmt === $post_before->post_modified_gmt) {
+            return;
+        }
+
+        if (
+            $post_after->post_title === $post_before->post_title &&
+            $post_after->post_content === $post_before->post_content &&
+            $post_after->post_excerpt === $post_before->post_excerpt &&
+            $post_after->menu_order === $post_before->menu_order
+        ) {
+            return;
+        }
+
+        $user = wp_get_current_user();
+        $user_data = $this->get_user_data($user);
+        $geo_data = $this->get_geolocation_data();
+
+        WPAL_Helpers::log_activity(
+            'post_updated',
+            sprintf(__('%s updated: %s', 'wp-activity-logger-pro'), ucfirst($post_after->post_type), $post_after->post_title),
+            'info',
+            array(
+                'user_id' => $user->ID,
+                'username' => $user->user_login,
+                'user_role' => $user_data['role'],
+                'object_id' => $post_after->ID,
+                'object_type' => $post_after->post_type,
+                'object_name' => $post_after->post_title,
+                'ip' => $geo_data['ip'],
+                'location' => $geo_data['location'],
+                'country' => $geo_data['country'],
+                'country_code' => $geo_data['country_code'],
+                'context' => array(
+                    'old_status' => $post_before->post_status,
+                    'new_status' => $post_after->post_status,
+                    'post_type' => $post_after->post_type,
+                    'title_changed' => $post_after->post_title !== $post_before->post_title,
+                    'content_changed' => $post_after->post_content !== $post_before->post_content,
+                    'excerpt_changed' => $post_after->post_excerpt !== $post_before->post_excerpt,
+                ),
             )
         );
     }
@@ -1587,27 +1652,6 @@ class WPAL_Tracker {
      * Get IP address
      */
     private function get_ip_address() {
-        // Check for CloudFlare IP
-        $ip = isset($_SERVER['HTTP_CF_CONNECTING_IP']) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : '';
-        
-        // Check for proxy headers
-        if (empty($ip) && isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-            
-            // Check if multiple IPs are set and get the first one
-            if (strpos($ip, ',') !== false) {
-                $ip = explode(',', $ip)[0];
-            }
-        }
-        
-        // Check for remote address
-        if (empty($ip) && isset($_SERVER['REMOTE_ADDR'])) {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-        
-        // Validate IP
-        $ip = filter_var($ip, FILTER_VALIDATE_IP);
-        
-        return $ip ?: '';
+        return class_exists('WPAL_Helpers') ? WPAL_Helpers::get_ip_address() : '';
     }
 }
