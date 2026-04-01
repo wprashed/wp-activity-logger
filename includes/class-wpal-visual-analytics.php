@@ -16,7 +16,6 @@ class WPAL_Visual_Analytics {
      * Constructor
      */
     public function __construct() {
-        add_action('admin_menu', array($this, 'add_submenu_page'), 20);
         add_action('wp_ajax_wpal_get_analytics_data', array($this, 'ajax_get_analytics_data'));
     }
 
@@ -25,7 +24,7 @@ class WPAL_Visual_Analytics {
      */
     public function add_submenu_page() {
         add_submenu_page(
-            'wp-activity-logger-pro-dashboard',
+            'wp-activity-logger-pro',
             __('Analytics', 'wp-activity-logger-pro'),
             __('Analytics', 'wp-activity-logger-pro'),
             'manage_options',
