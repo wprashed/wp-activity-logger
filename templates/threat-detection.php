@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 
 $options = WPAL_Helpers::get_settings();
 $integrity = wp_activity_logger_pro()->file_integrity->get_baseline_status();
-$vulnerability_report = !empty(wp_activity_logger_pro()->vulnerability_scanner) ? wp_activity_logger_pro()->vulnerability_scanner->get_latest_report() : array();
+$vulnerability_report = array();
 ?>
 
 <div class="wrap wpal-wrap">
@@ -148,11 +148,7 @@ $vulnerability_report = !empty(wp_activity_logger_pro()->vulnerability_scanner) 
 
         <div id="wpal-vulnerability-status" class="wpal-note">
             <?php
-            if (!empty($vulnerability_report['generated_at'])) {
-                echo esc_html(sprintf(__('Latest report generated %s.', 'wp-activity-logger-pro'), $vulnerability_report['generated_at']));
-            } else {
-                esc_html_e('No software security report has been generated yet.', 'wp-activity-logger-pro');
-            }
+            esc_html_e('Run a manual scan to generate the latest software security report.', 'wp-activity-logger-pro');
             ?>
         </div>
 
