@@ -43,11 +43,17 @@ $roles = wp_roles();
                 </label>
                 <label>
                     <span><?php esc_html_e('Exclude roles from logging', 'wp-activity-logger-pro'); ?></span>
-                    <select class="wpal-input" name="wpal_options[exclude_roles][]" multiple>
+                    <div class="wpal-check-grid">
                         <?php foreach ($roles->roles as $role_key => $role) : ?>
-                            <option value="<?php echo esc_attr($role_key); ?>" <?php selected(in_array($role_key, (array) $settings['exclude_roles'], true)); ?>><?php echo esc_html($role['name']); ?></option>
+                            <label class="wpal-check-card">
+                                <input type="checkbox" name="wpal_options[exclude_roles][]" value="<?php echo esc_attr($role_key); ?>" <?php checked(in_array($role_key, (array) $settings['exclude_roles'], true)); ?>>
+                                <span>
+                                    <strong><?php echo esc_html($role['name']); ?></strong>
+                                    <small><?php echo esc_html($role_key); ?></small>
+                                </span>
+                            </label>
                         <?php endforeach; ?>
-                    </select>
+                    </div>
                 </label>
             </div>
         </section>
@@ -91,22 +97,28 @@ $roles = wp_roles();
                 </div>
             </div>
             <div class="wpal-form-stack">
-                <label>
+                <div>
                     <span><?php esc_html_e('Alert severities', 'wp-activity-logger-pro'); ?></span>
-                    <select class="wpal-input" name="wpal_options[notification_severities][]" multiple>
+                    <div class="wpal-check-grid" style="margin-top:8px;">
                         <?php foreach (array('info', 'warning', 'error') as $severity) : ?>
-                            <option value="<?php echo esc_attr($severity); ?>" <?php selected(in_array($severity, (array) $settings['notification_severities'], true)); ?>><?php echo esc_html(ucfirst($severity)); ?></option>
+                            <label class="wpal-check-card">
+                                <input type="checkbox" name="wpal_options[notification_severities][]" value="<?php echo esc_attr($severity); ?>" <?php checked(in_array($severity, (array) $settings['notification_severities'], true)); ?>>
+                                <span><strong><?php echo esc_html(ucfirst($severity)); ?></strong></span>
+                            </label>
                         <?php endforeach; ?>
-                    </select>
-                </label>
-                <label>
+                    </div>
+                </div>
+                <div>
                     <span><?php esc_html_e('Alert event keys', 'wp-activity-logger-pro'); ?></span>
-                    <select class="wpal-input" name="wpal_options[notification_events][]" multiple>
+                    <div class="wpal-check-grid" style="margin-top:8px;">
                         <?php foreach (array('login_failed', 'plugin_activated', 'plugin_deactivated', 'theme_switched', 'user_role_changed', 'settings_updated') as $event_key) : ?>
-                            <option value="<?php echo esc_attr($event_key); ?>" <?php selected(in_array($event_key, (array) $settings['notification_events'], true)); ?>><?php echo esc_html($event_key); ?></option>
+                            <label class="wpal-check-card">
+                                <input type="checkbox" name="wpal_options[notification_events][]" value="<?php echo esc_attr($event_key); ?>" <?php checked(in_array($event_key, (array) $settings['notification_events'], true)); ?>>
+                                <span><strong><?php echo esc_html($event_key); ?></strong></span>
+                            </label>
                         <?php endforeach; ?>
-                    </select>
-                </label>
+                    </div>
+                </div>
                 <label class="wpal-check">
                     <input type="checkbox" name="wpal_options[enable_webhook_notifications]" value="1" <?php checked($settings['enable_webhook_notifications'], 1); ?>>
                     <span><?php esc_html_e('Enable generic webhook delivery', 'wp-activity-logger-pro'); ?></span>
@@ -126,14 +138,17 @@ $roles = wp_roles();
                     <span><?php esc_html_e('Excluded actions', 'wp-activity-logger-pro'); ?></span>
                     <textarea class="wpal-input" rows="4" name="wpal_options[excluded_actions]" placeholder="heartbeat_received, autosave"><?php echo esc_textarea($settings['excluded_actions']); ?></textarea>
                 </label>
-                <label>
+                <div>
                     <span><?php esc_html_e('Suppressed severities', 'wp-activity-logger-pro'); ?></span>
-                    <select class="wpal-input" name="wpal_options[suppressed_severities][]" multiple>
+                    <div class="wpal-check-grid" style="margin-top:8px;">
                         <?php foreach (array('info', 'warning', 'error') as $severity) : ?>
-                            <option value="<?php echo esc_attr($severity); ?>" <?php selected(in_array($severity, (array) $settings['suppressed_severities'], true)); ?>><?php echo esc_html(ucfirst($severity)); ?></option>
+                            <label class="wpal-check-card">
+                                <input type="checkbox" name="wpal_options[suppressed_severities][]" value="<?php echo esc_attr($severity); ?>" <?php checked(in_array($severity, (array) $settings['suppressed_severities'], true)); ?>>
+                                <span><strong><?php echo esc_html(ucfirst($severity)); ?></strong></span>
+                            </label>
                         <?php endforeach; ?>
-                    </select>
-                </label>
+                    </div>
+                </div>
                 <label class="wpal-check">
                     <input type="checkbox" name="wpal_options[daily_summary_enabled]" value="1" <?php checked($settings['daily_summary_enabled'], 1); ?>>
                     <span><?php esc_html_e('Send daily summary report', 'wp-activity-logger-pro'); ?></span>
