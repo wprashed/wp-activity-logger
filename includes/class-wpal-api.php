@@ -149,7 +149,15 @@ class WPAL_API {
      */
     public function get_log_details() {
         $this->guard_request();
+        if (is_multisite() && !empty($_POST['site_id'])) {
+            switch_to_blog(absint($_POST['site_id']));
+            WPAL_Helpers::init();
+        }
         include WPAL_PLUGIN_DIR . 'templates/log-details.php';
+        if (is_multisite() && !empty($_POST['site_id'])) {
+            restore_current_blog();
+            WPAL_Helpers::init();
+        }
         wp_die();
     }
 
@@ -164,13 +172,24 @@ class WPAL_API {
         }
 
         $log_id = isset($_POST['log_id']) ? absint($_POST['log_id']) : 0;
+        $site_id = isset($_POST['site_id']) ? absint($_POST['site_id']) : 0;
         if (!$log_id) {
             wp_send_json_error(array('message' => __('Invalid log ID.', 'wp-activity-logger-pro')));
+        }
+
+        if (is_multisite() && $site_id) {
+            switch_to_blog($site_id);
+            WPAL_Helpers::init();
         }
 
         global $wpdb;
         WPAL_Helpers::init();
         $result = $wpdb->delete(WPAL_Helpers::$db_table, array('id' => $log_id), array('%d'));
+
+        if (is_multisite() && $site_id) {
+            restore_current_blog();
+            WPAL_Helpers::init();
+        }
 
         if ($result === false) {
             wp_send_json_error(array('message' => __('Failed to delete log.', 'wp-activity-logger-pro')));
