@@ -104,6 +104,69 @@ $roles = wp_roles();
         <section class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
+                    <h2><?php esc_html_e('Vulnerability Intelligence', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('Connect Wordfence, Patchstack, and WPScan so installed plugins, themes, and WordPress core can be checked against known vulnerabilities.', 'wp-activity-logger-pro'); ?></p>
+                </div>
+            </div>
+            <div class="wpal-form-stack">
+                <label class="wpal-check">
+                    <input type="checkbox" name="wpal_options[enable_vulnerability_scanner]" value="1" <?php checked($settings['enable_vulnerability_scanner'], 1); ?>>
+                    <span><?php esc_html_e('Enable software vulnerability scanning', 'wp-activity-logger-pro'); ?></span>
+                </label>
+                <label class="wpal-check">
+                    <input type="checkbox" name="wpal_options[vulnerability_auto_scan]" value="1" <?php checked($settings['vulnerability_auto_scan'], 1); ?>>
+                    <span><?php esc_html_e('Run lightweight weekly scheduled scans', 'wp-activity-logger-pro'); ?></span>
+                </label>
+                <div>
+                    <span><?php esc_html_e('Providers', 'wp-activity-logger-pro'); ?></span>
+                    <div class="wpal-check-grid" style="margin-top:8px;">
+                        <?php foreach (array('wordfence' => 'Wordfence', 'patchstack' => 'Patchstack', 'wpscan' => 'WPScan') as $provider_key => $provider_label) : ?>
+                            <label class="wpal-check-card">
+                                <input type="checkbox" name="wpal_options[vulnerability_sources][]" value="<?php echo esc_attr($provider_key); ?>" <?php checked(in_array($provider_key, (array) $settings['vulnerability_sources'], true)); ?>>
+                                <span><strong><?php echo esc_html($provider_label); ?></strong></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <div>
+                    <span><?php esc_html_e('Software scope', 'wp-activity-logger-pro'); ?></span>
+                    <div class="wpal-check-grid" style="margin-top:8px;">
+                        <label class="wpal-check-card">
+                            <input type="checkbox" name="wpal_options[vulnerability_scan_plugins]" value="1" <?php checked($settings['vulnerability_scan_plugins'], 1); ?>>
+                            <span><strong><?php esc_html_e('Plugins', 'wp-activity-logger-pro'); ?></strong></span>
+                        </label>
+                        <label class="wpal-check-card">
+                            <input type="checkbox" name="wpal_options[vulnerability_scan_themes]" value="1" <?php checked($settings['vulnerability_scan_themes'], 1); ?>>
+                            <span><strong><?php esc_html_e('Themes', 'wp-activity-logger-pro'); ?></strong></span>
+                        </label>
+                        <label class="wpal-check-card">
+                            <input type="checkbox" name="wpal_options[vulnerability_scan_core]" value="1" <?php checked($settings['vulnerability_scan_core'], 1); ?>>
+                            <span><strong><?php esc_html_e('WordPress core', 'wp-activity-logger-pro'); ?></strong></span>
+                        </label>
+                    </div>
+                </div>
+                <label class="wpal-check">
+                    <input type="checkbox" name="wpal_options[vulnerability_include_file_integrity]" value="1" <?php checked($settings['vulnerability_include_file_integrity'], 1); ?>>
+                    <span><?php esc_html_e('Blend file-integrity changes into the software report', 'wp-activity-logger-pro'); ?></span>
+                </label>
+                <label>
+                    <span><?php esc_html_e('Wordfence API key', 'wp-activity-logger-pro'); ?></span>
+                    <input class="wpal-input" type="text" name="wpal_options[wordfence_api_key]" value="<?php echo esc_attr($settings['wordfence_api_key']); ?>">
+                </label>
+                <label>
+                    <span><?php esc_html_e('Patchstack API key', 'wp-activity-logger-pro'); ?></span>
+                    <input class="wpal-input" type="text" name="wpal_options[patchstack_api_key]" value="<?php echo esc_attr($settings['patchstack_api_key']); ?>">
+                </label>
+                <label>
+                    <span><?php esc_html_e('WPScan API token', 'wp-activity-logger-pro'); ?></span>
+                    <input class="wpal-input" type="text" name="wpal_options[wpscan_api_token]" value="<?php echo esc_attr($settings['wpscan_api_token']); ?>">
+                </label>
+            </div>
+        </section>
+
+        <section class="wpal-panel">
+            <div class="wpal-panel-head">
+                <div>
                     <h2><?php esc_html_e('Alert Filters', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('Choose which actions and severities trigger alerts.', 'wp-activity-logger-pro'); ?></p>
                 </div>
