@@ -335,6 +335,124 @@
         });
     });
 
+    $('#wpal-run-diagnostics').on('click', function() {
+        const button = $(this);
+        const originalText = button.text();
+        button.prop('disabled', true).text('Running scan...');
+
+        request({ action: 'wpal_run_diagnostics' }).done(function(response) {
+            if (response.success) {
+                window.location.reload();
+                return;
+            }
+
+            window.alert(response.data && response.data.message ? response.data.message : 'Unable to run the diagnostics scan.');
+            button.prop('disabled', false).text(originalText);
+        }).fail(function() {
+            window.alert('Unable to run the diagnostics scan.');
+            button.prop('disabled', false).text(originalText);
+        });
+    });
+
+    function getSafeModeSelection() {
+        return ($('#wpal-safe-mode-plugins').val() || []).filter(Boolean);
+    }
+
+    function setSafeModeSelection(plugins) {
+        $('#wpal-safe-mode-plugins').val((plugins || []).filter(Boolean)).trigger('change');
+    }
+
+    function enableSafeMode(trigger) {
+        const button = $(trigger);
+        const originalText = button.text();
+        button.prop('disabled', true).text('Enabling...');
+
+        request({
+            action: 'wpal_enable_safe_mode',
+            plugins: getSafeModeSelection()
+        }).done(function(response) {
+            if (response.success) {
+                window.location.reload();
+                return;
+            }
+
+            window.alert(response.data && response.data.message ? response.data.message : 'Unable to enable safe mode.');
+            button.prop('disabled', false).text(originalText);
+        }).fail(function() {
+            window.alert('Unable to enable safe mode.');
+            button.prop('disabled', false).text(originalText);
+        });
+    }
+
+    function disableSafeMode(trigger) {
+        const button = $(trigger);
+        const originalText = button.text();
+        button.prop('disabled', true).text('Disabling...');
+
+        request({ action: 'wpal_disable_safe_mode' }).done(function(response) {
+            if (response.success) {
+                window.location.reload();
+                return;
+            }
+
+            window.alert(response.data && response.data.message ? response.data.message : 'Unable to disable safe mode.');
+            button.prop('disabled', false).text(originalText);
+        }).fail(function() {
+            window.alert('Unable to disable safe mode.');
+            button.prop('disabled', false).text(originalText);
+        });
+    }
+
+    $('#wpal-enable-safe-mode, #wpal-enable-safe-mode-inline').on('click', function() {
+        enableSafeMode(this);
+    });
+
+    $(document).on('click', '.wpal-safe-mode-preset', function() {
+        let plugins = [];
+        try {
+            plugins = JSON.parse($(this).attr('data-plugins') || '[]');
+        } catch (error) {
+            plugins = [];
+        }
+
+        setSafeModeSelection(plugins);
+        enableSafeMode(this);
+    });
+
+    $('#wpal-disable-safe-mode, #wpal-disable-safe-mode-inline').on('click', function() {
+        disableSafeMode(this);
+    });
+
+    $('#wpal-ask-diagnostics-ai').on('click', function() {
+        const question = $('#wpal-diagnostics-question').val().trim();
+        const answerBox = $('#wpal-diagnostics-answer');
+        const button = $(this);
+
+        if (!question) {
+            answerBox.text('Ask a question first.');
+            return;
+        }
+
+        const originalText = button.text();
+        button.prop('disabled', true).text('Thinking...');
+        answerBox.text('Checking the latest scan context...');
+
+        request({
+            action: 'wpal_ask_diagnostics_ai',
+            question: question
+        }).done(function(response) {
+            if (response.success && response.data && response.data.answer) {
+                answerBox.text(response.data.answer);
+            } else {
+                answerBox.text('No answer was available for that question.');
+            }
+            button.prop('disabled', false).text(originalText);
+        }).fail(function() {
+            answerBox.text('Unable to get an answer right now.');
+            button.prop('disabled', false).text(originalText);
+        });
+    });
+
     $(document).ready(function() {
         initDatepickers();
         initTables();
