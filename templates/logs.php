@@ -136,47 +136,56 @@ foreach ($severity_rows as $row) {
         <?php if (empty($logs)) : ?>
             <p><?php esc_html_e('No logs match the current filters.', 'wp-activity-logger-pro'); ?></p>
         <?php else : ?>
-            <div class="wpal-table-wrap">
-                <table id="wpal-logs-table" class="wpal-table">
-                    <thead>
-                        <tr>
-                            <th><?php esc_html_e('Time', 'wp-activity-logger-pro'); ?></th>
-                            <th><?php esc_html_e('User', 'wp-activity-logger-pro'); ?></th>
-                            <th><?php esc_html_e('Action', 'wp-activity-logger-pro'); ?></th>
-                            <th><?php esc_html_e('Description', 'wp-activity-logger-pro'); ?></th>
-                            <th><?php esc_html_e('Severity', 'wp-activity-logger-pro'); ?></th>
-                            <th><?php esc_html_e('IP', 'wp-activity-logger-pro'); ?></th>
-                            <th><?php esc_html_e('Actions', 'wp-activity-logger-pro'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($logs as $log) : ?>
-                            <tr>
-                                <td><?php echo esc_html(WPAL_Helpers::format_datetime($log->time)); ?></td>
-                                <td>
-                                    <strong><?php echo esc_html($log->username); ?></strong>
-                                    <?php if (!empty($log->user_role)) : ?>
-                                        <span class="wpal-meta-pill"><?php echo esc_html($log->user_role); ?></span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo esc_html($log->action); ?></td>
-                                <td><?php echo esc_html(wp_trim_words($log->description, 14)); ?></td>
-                                <td><?php echo WPAL_Helpers::get_severity_badge($log->severity); ?></td>
-                                <td>
-                                    <?php echo esc_html($log->ip ? $log->ip : '—'); ?>
-                                    <?php if (!empty($log->site_label)) : ?>
-                                        <div class="wpal-list-subtext"><?php echo esc_html($log->site_label); ?></div>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="wpal-table-actions">
-                                    <button type="button" class="wpal-btn wpal-btn-secondary wpal-view-log" data-log-id="<?php echo esc_attr($log->id); ?>" data-site-id="<?php echo esc_attr(isset($log->site_id) ? $log->site_id : 0); ?>"><?php esc_html_e('View', 'wp-activity-logger-pro'); ?></button>
+            <div class="wpal-stream">
+                <?php foreach ($logs as $log) : ?>
+                    <article class="wpal-stream-card">
+                        <div class="wpal-stream-head">
+                            <div class="wpal-stream-time">
+                                <span class="wpal-stream-kicker"><?php esc_html_e('Recorded', 'wp-activity-logger-pro'); ?></span>
+                                <strong><?php echo esc_html(WPAL_Helpers::format_datetime($log->time)); ?></strong>
+                            </div>
+                            <div class="wpal-stream-head-meta">
+                                <?php echo WPAL_Helpers::get_severity_badge($log->severity); ?>
+                                <?php if (!empty($log->site_label)) : ?>
+                                    <span class="wpal-meta-pill"><?php echo esc_html($log->site_label); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="wpal-stream-body">
+                            <div class="wpal-stream-primary">
+                                <h3><?php echo esc_html($log->description); ?></h3>
+                                <p class="wpal-stream-action"><?php echo esc_html($log->action); ?></p>
+                            </div>
+
+                            <aside class="wpal-stream-sidebar">
+                                <div class="wpal-stream-meta-grid">
+                                    <div class="wpal-stream-meta-item">
+                                        <span><?php esc_html_e('User', 'wp-activity-logger-pro'); ?></span>
+                                        <strong><?php echo esc_html($log->username ? $log->username : __('Guest', 'wp-activity-logger-pro')); ?></strong>
+                                        <?php if (!empty($log->user_role)) : ?>
+                                            <em><?php echo esc_html($log->user_role); ?></em>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="wpal-stream-meta-item">
+                                        <span><?php esc_html_e('IP Address', 'wp-activity-logger-pro'); ?></span>
+                                        <strong><?php echo esc_html($log->ip ? $log->ip : '—'); ?></strong>
+                                    </div>
+                                    <div class="wpal-stream-meta-item">
+                                        <span><?php esc_html_e('Event ID', 'wp-activity-logger-pro'); ?></span>
+                                        <strong>#<?php echo esc_html($log->id); ?></strong>
+                                    </div>
+                                </div>
+
+                                <div class="wpal-stream-actions">
+                                    <button type="button" class="wpal-btn wpal-btn-secondary wpal-view-log" data-log-id="<?php echo esc_attr($log->id); ?>" data-site-id="<?php echo esc_attr(isset($log->site_id) ? $log->site_id : 0); ?>"><?php esc_html_e('View Details', 'wp-activity-logger-pro'); ?></button>
                                     <button type="button" class="wpal-btn wpal-btn-secondary wpal-archive-log" data-log-id="<?php echo esc_attr($log->id); ?>" data-site-id="<?php echo esc_attr(isset($log->site_id) ? $log->site_id : 0); ?>"><?php esc_html_e('Archive', 'wp-activity-logger-pro'); ?></button>
                                     <button type="button" class="wpal-btn wpal-btn-danger wpal-delete-log" data-log-id="<?php echo esc_attr($log->id); ?>" data-site-id="<?php echo esc_attr(isset($log->site_id) ? $log->site_id : 0); ?>"><?php esc_html_e('Delete', 'wp-activity-logger-pro'); ?></button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                                </div>
+                            </aside>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </section>
