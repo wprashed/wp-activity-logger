@@ -99,6 +99,56 @@
         }
     }
 
+    function initNoticeTray() {
+        const wrap = $('.wpal-wrap').first();
+        if (!wrap.length) {
+            return;
+        }
+
+        let tray = $('.wpal-notice-stack').first();
+        if (!tray.length) {
+            tray = $('<div class="wpal-notice-stack" />');
+            wrap.before(tray);
+        }
+
+        const selectors = [
+            '#wpbody-content > .notice',
+            '#wpbody-content > .error',
+            '#wpbody-content > .updated',
+            '#wpbody-content > .update-nag',
+            '.wpal-wrap .notice',
+            '.wpal-wrap .error',
+            '.wpal-wrap .updated',
+            '.wpal-wrap .update-nag'
+        ];
+
+        const seen = new window.Set();
+        $(selectors.join(',')).each(function() {
+            const notice = $(this);
+            if (!notice.length || notice.closest('.wpal-notice-stack').length) {
+                return;
+            }
+
+            if (notice.attr('id') === 'message' && notice.closest('form').length) {
+                return;
+            }
+
+            const key = (notice.attr('id') || '') + '|' + $.trim(notice.text());
+            if (seen.has(key)) {
+                notice.remove();
+                return;
+            }
+
+            seen.add(key);
+            notice.addClass('wpal-notice-card');
+            tray.append(notice);
+        });
+
+        if (!tray.children().length) {
+            tray.remove();
+        }
+    }
+
     $(document).on('click', '.wpal-view-log', function() {
         request({
             action: 'wpal_get_log_details',
@@ -457,5 +507,6 @@
         initDatepickers();
         initTables();
         initPageCharts();
+        initNoticeTray();
     });
 })(jQuery);
