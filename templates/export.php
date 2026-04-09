@@ -13,6 +13,17 @@ $table_name = WPAL_Helpers::$db_table;
 $settings = WPAL_Helpers::get_settings();
 $users = $wpdb->get_col("SELECT DISTINCT username FROM $table_name WHERE username <> '' ORDER BY username ASC");
 $actions = $wpdb->get_col("SELECT DISTINCT action FROM $table_name ORDER BY action ASC");
+$export_columns = array(
+    __('Time', 'wp-activity-logger-pro'),
+    __('User', 'wp-activity-logger-pro'),
+    __('Role', 'wp-activity-logger-pro'),
+    __('Action', 'wp-activity-logger-pro'),
+    __('Severity', 'wp-activity-logger-pro'),
+    __('IP', 'wp-activity-logger-pro'),
+    __('Browser', 'wp-activity-logger-pro'),
+    __('Object', 'wp-activity-logger-pro'),
+    __('Description', 'wp-activity-logger-pro'),
+);
 ?>
 
 <div class="wrap wpal-wrap">
@@ -72,11 +83,11 @@ $actions = $wpdb->get_col("SELECT DISTINCT action FROM $table_name ORDER BY acti
                 </label>
                 <label>
                     <span><?php esc_html_e('Date from', 'wp-activity-logger-pro'); ?></span>
-                    <input class="wpal-input wpal-datepicker" type="text" name="date_from" placeholder="YYYY-MM-DD">
+                    <input class="wpal-input wpal-datepicker" type="text" name="date_from" placeholder="<?php esc_attr_e('YYYY-MM-DD', 'wp-activity-logger-pro'); ?>">
                 </label>
                 <label>
                     <span><?php esc_html_e('Date to', 'wp-activity-logger-pro'); ?></span>
-                    <input class="wpal-input wpal-datepicker" type="text" name="date_to" placeholder="YYYY-MM-DD">
+                    <input class="wpal-input wpal-datepicker" type="text" name="date_to" placeholder="<?php esc_attr_e('YYYY-MM-DD', 'wp-activity-logger-pro'); ?>">
                 </label>
                 <button type="submit" class="wpal-btn wpal-btn-primary"><?php esc_html_e('Download Export', 'wp-activity-logger-pro'); ?></button>
             </form>
@@ -90,7 +101,7 @@ $actions = $wpdb->get_col("SELECT DISTINCT action FROM $table_name ORDER BY acti
                 </div>
             </div>
             <div class="wpal-list">
-                <?php foreach (array('Time', 'User', 'Role', 'Action', 'Severity', 'IP', 'Browser', 'Object', 'Description') as $column) : ?>
+                <?php foreach ($export_columns as $column) : ?>
                     <div class="wpal-list-row">
                         <div><strong><?php echo esc_html($column); ?></strong></div>
                         <div class="wpal-list-value">✓</div>
