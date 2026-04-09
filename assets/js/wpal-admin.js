@@ -16,6 +16,25 @@
         return $('#wpal-log-details-modal');
     }
 
+    function removeLogItem(button) {
+        const row = button.closest('tr');
+        if (row.length) {
+            if ($.fn.dataTable && $.fn.dataTable.isDataTable('#wpal-logs-table')) {
+                $('#wpal-logs-table').DataTable().row(row).remove().draw();
+            } else {
+                row.remove();
+            }
+            return;
+        }
+
+        const card = button.closest('.wpal-stream-card');
+        if (card.length) {
+            card.fadeOut(180, function() {
+                $(this).remove();
+            });
+        }
+    }
+
     window.wpalRenderLineChart = function(canvasId, labels, values) {
         const canvas = document.getElementById(canvasId);
         if (!canvas || typeof Chart === 'undefined') {
@@ -149,6 +168,31 @@
         }
     }
 
+    function initTabs() {
+        $('[data-wpal-tabs]').each(function() {
+            const root = $(this).closest('.wpal-panel');
+            const buttons = $(this).find('.wpal-panel-tab');
+            const panels = root.find('.wpal-tab-panel');
+
+            function activateTab(target) {
+                buttons.removeClass('is-active');
+                panels.removeClass('is-active');
+
+                buttons.filter(`[data-tab-target="${target}"]`).addClass('is-active');
+                panels.filter(`[data-tab-panel="${target}"]`).addClass('is-active');
+            }
+
+            buttons.on('click', function() {
+                activateTab($(this).attr('data-tab-target'));
+            });
+
+            const initial = buttons.filter('.is-active').attr('data-tab-target') || buttons.first().attr('data-tab-target');
+            if (initial) {
+                activateTab(initial);
+            }
+        });
+    }
+
     $(document).on('click', '.wpal-view-log', function() {
         request({
             action: 'wpal_get_log_details',
@@ -182,12 +226,7 @@
             site_id: button.data('site-id') || 0
         }).done(function(response) {
             if (response.success) {
-                const row = button.closest('tr');
-                if ($.fn.dataTable && $.fn.dataTable.isDataTable('#wpal-logs-table')) {
-                    $('#wpal-logs-table').DataTable().row(row).remove().draw();
-                } else {
-                    row.remove();
-                }
+                removeLogItem(button);
             } else if (response.data && response.data.message) {
                 window.alert(response.data.message);
             }
@@ -214,9 +253,7 @@
             site_id: button.data('site-id') || 0
         }).done(function(response) {
             if (response.success) {
-                button.closest('tr').fadeOut(180, function() {
-                    $(this).remove();
-                });
+                removeLogItem(button);
             } else if (response.data && response.data.message) {
                 window.alert(response.data.message);
             }
@@ -352,7 +389,7 @@
     });
 
     $('#wpal-reset-settings').on('click', function() {
-        if (!window.confirm('Reset all settings to defaults?')) {
+        if (!window.confirm(wpal_admin_vars.confirm_reset_settings)) {
             return;
         }
 
@@ -363,19 +400,19 @@
         });
     });
 
-    $('#wpal-export-user-logs').on('click', function() {
-        const userId = $('#wpal-privacy-user-id').val();
+    $(document).on('click', '.wpal-export-user-logs-trigger', function() {
+        const userId = $(this).closest('.wpal-inline-actions').find('.wpal-privacy-user-id-input').val();
         if (!userId) {
-            window.alert('Enter a user ID first.');
+            window.alert(wpal_admin_vars.enter_user_id);
             return;
         }
         const url = `${wpal_admin_vars.ajax_url}?action=wpal_export_user_logs&nonce=${encodeURIComponent(wpal_admin_vars.nonce)}&user_id=${encodeURIComponent(userId)}`;
         window.location.href = url;
     });
 
-    $('#wpal-delete-user-logs-btn').on('click', function() {
-        const userId = $('#wpal-privacy-user-id').val();
-        if (!userId || !window.confirm('Delete all logs for this user?')) {
+    $(document).on('click', '.wpal-delete-user-logs-trigger', function() {
+        const userId = $(this).closest('.wpal-inline-actions').find('.wpal-privacy-user-id-input').val();
+        if (!userId || !window.confirm(wpal_admin_vars.confirm_delete_user_logs)) {
             return;
         }
         request({ action: 'wpal_delete_user_logs', user_id: userId }).done(function(response) {
@@ -388,7 +425,7 @@
     $('#wpal-run-diagnostics').on('click', function() {
         const button = $(this);
         const originalText = button.text();
-        button.prop('disabled', true).text('Running scan...');
+        button.prop('disabled', true).text(wpal_admin_vars.running_scan);
 
         request({ action: 'wpal_run_diagnostics' }).done(function(response) {
             if (response.success) {
@@ -396,7 +433,7 @@
                 return;
             }
 
-            window.alert(response.data && response.data.message ? response.data.message : 'Unable to run the diagnostics scan.');
+            window.alert(response.data && response.data.message ? response.data.message : wpal_admin_vars.scan_failed);
             button.prop('disabled', false).text(originalText);
         }).fail(function() {
             window.alert('Unable to run the diagnostics scan.');
@@ -508,5 +545,6 @@
         initTables();
         initPageCharts();
         initNoticeTray();
+        initTabs();
     });
 })(jQuery);
