@@ -1,6 +1,6 @@
-# WP Activity Logger Pro - Installation Guide
+# TracePilot for WordPress - Installation Guide
 
-This guide will walk you through the process of installing and setting up WP Activity Logger Pro on your WordPress site.
+This guide will walk you through the process of installing and setting up TracePilot for WordPress on your WordPress site.
 
 ## System Requirements
 
@@ -19,19 +19,19 @@ Before installing, ensure your system meets the following requirements:
 1. Log in to your WordPress admin dashboard
 2. Navigate to **Plugins > Add New**
 3. Click the **Upload Plugin** button at the top of the page
-4. Click **Choose File** and select the `wp-activity-logger-pro.zip` file
+4. Click **Choose File** and select the `tracepilot-for-wordpress.zip` file
 5. Click **Install Now**
 6. After installation completes, click **Activate Plugin**
 
 ### Method 2: Install via FTP
 
-1. Extract the `wp-activity-logger-pro.zip` file on your computer
+1. Extract the `tracepilot-for-wordpress.zip` file on your computer
 2. Connect to your website using an FTP client
 3. Navigate to the `/wp-content/plugins/` directory
-4. Upload the `wp-activity-logger-pro` folder to this directory
+4. Upload the `tracepilot-for-wordpress` folder to this directory
 5. Log in to your WordPress admin dashboard
 6. Navigate to **Plugins**
-7. Find "WP Activity Logger Pro" and click **Activate**
+7. Find "TracePilot for WordPress" and click **Activate**
 
 ## Post-Installation Setup
 
@@ -41,13 +41,13 @@ After activating the plugin, follow these steps to complete the setup:
 
 The plugin will automatically create the necessary database tables upon activation. If you encounter any issues, you can manually trigger table creation:
 
-1. Navigate to **Activity Logger > Settings**
+1. Navigate to **TracePilot > Settings**
 2. Click the **Diagnostics** tab
 3. Click the **Repair Tables** button
 
 ### 2. Configure Basic Settings
 
-1. Navigate to **Activity Logger > Settings**
+1. Navigate to **TracePilot > Settings**
 2. Set your preferred log retention period (default is 30 days)
 3. Select which user roles to track
 4. Choose which events to log
@@ -57,7 +57,7 @@ The plugin will automatically create the necessary database tables upon activati
 
 If you want to receive notifications for certain events:
 
-1. Navigate to **Activity Logger > Notifications**
+1. Navigate to **TracePilot > Notifications**
 2. Enable email notifications
 3. Add recipient email addresses
 4. Select which events should trigger notifications
@@ -67,7 +67,7 @@ If you want to receive notifications for certain events:
 
 To control which users can access the logs:
 
-1. Navigate to **Activity Logger > Settings**
+1. Navigate to **TracePilot > Settings**
 2. Click the **Access Control** tab
 3. Select which user roles can view, manage, and export logs
 4. Click **Save Changes**
@@ -76,9 +76,9 @@ To control which users can access the logs:
 
 To verify that the plugin is working correctly:
 
-1. Navigate to **Activity Logger > Dashboard**
+1. Navigate to **TracePilot > Dashboard**
 2. You should see recent activity, including your own login and the plugin activation
-3. Navigate to **Activity Logger > Logs** to view detailed activity logs
+3. Navigate to **TracePilot > Logs** to view detailed activity logs
 
 ## Troubleshooting
 
@@ -94,7 +94,7 @@ If the plugin fails to create database tables:
 
 #### Plugin Menu Not Appearing
 
-If the Activity Logger menu doesn't appear:
+If the TracePilot menu doesn't appear:
 
 1. Clear your browser cache
 2. Log out and log back in to WordPress
@@ -104,7 +104,7 @@ If the Activity Logger menu doesn't appear:
 
 If activities are not being logged:
 
-1. Navigate to **Activity Logger > Settings**
+1. Navigate to **TracePilot > Settings**
 2. Ensure that the relevant event types are enabled
 3. Check the WordPress debug log for errors
 4. Verify that the database tables exist and are properly structured
@@ -123,12 +123,12 @@ When upgrading from a previous version:
 If you need to uninstall the plugin:
 
 1. Navigate to **Plugins**
-2. Deactivate "WP Activity Logger Pro"
+2. Deactivate "TracePilot for WordPress"
 3. Click **Delete**
 
 Note: By default, the plugin will retain its database tables and settings when deleted. To completely remove all data:
 
-1. Navigate to **Activity Logger > Settings**
+1. Navigate to **TracePilot > Settings**
 2. Click the **Advanced** tab
 3. Check "Delete all data when plugin is uninstalled"
 4. Click **Save Changes**
@@ -142,7 +142,7 @@ If you encounter any issues during installation:
 
 ## Next Steps
 
-Now that you've installed WP Activity Logger Pro, you might want to:
+Now that you've installed TracePilot for WordPress, you might want to:
 
 - [Configure detailed settings](user-guide.md#settings)
 - [Set up custom event tracking](developer-guide.md#logging-custom-events)

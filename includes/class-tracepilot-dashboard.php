@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Activity Logger Pro Dashboard Class.
+ * TracePilot for WordPress dashboard class.
  *
- * @package WP_Activity_Logger_Pro
+ * @package TracePilot_For_WordPress
  * @since 1.0.0
  */
 
@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-class WPAL_Dashboard {
+class TracePilot_Dashboard {
     /**
      * Constructor.
      */
@@ -23,12 +23,12 @@ class WPAL_Dashboard {
      * Register admin menu.
      */
     public function add_admin_menu() {
-        $menu_icon = 'dashicons-visibility';
-        $capability = WPAL_Helpers::get_admin_capability();
+        $menu_icon = 'dashicons-shield-alt';
+        $capability = TracePilot_Helpers::get_admin_capability();
 
         add_menu_page(
-            __('Activity Logger', 'wp-activity-logger-pro'),
-            __('Activity Logger', 'wp-activity-logger-pro'),
+            __('TracePilot', 'wp-activity-logger-pro'),
+            __('TracePilot', 'wp-activity-logger-pro'),
             $capability,
             'wp-activity-logger-pro',
             array($this, 'render_dashboard_page'),
@@ -104,48 +104,48 @@ class WPAL_Dashboard {
      * Render dashboard page.
      */
     public function render_dashboard_page() {
-        include WPAL_PLUGIN_DIR . 'templates/dashboard.php';
+        include TracePilot_PLUGIN_DIR . 'templates/dashboard.php';
     }
 
     /**
      * Render logs page.
      */
     public function render_logs_page() {
-        include WPAL_PLUGIN_DIR . 'templates/logs.php';
+        include TracePilot_PLUGIN_DIR . 'templates/logs.php';
     }
 
     /**
      * Render analytics page.
      */
     public function render_analytics_page() {
-        include WPAL_PLUGIN_DIR . 'templates/analytics.php';
+        include TracePilot_PLUGIN_DIR . 'templates/analytics.php';
     }
 
     /**
      * Render threat detection page.
      */
     public function render_threat_detection_page() {
-        include WPAL_PLUGIN_DIR . 'templates/threat-detection.php';
+        include TracePilot_PLUGIN_DIR . 'templates/threat-detection.php';
     }
 
     /**
      * Render server recommendations page.
      */
     public function render_server_recommendations_page() {
-        include WPAL_PLUGIN_DIR . 'templates/server-recommendations.php';
+        include TracePilot_PLUGIN_DIR . 'templates/server-recommendations.php';
     }
 
     /**
      * Render search console page.
      */
     public function render_search_console_page() {
-        include WPAL_PLUGIN_DIR . 'templates/search-console.php';
+        include TracePilot_PLUGIN_DIR . 'templates/search-console.php';
     }
 
     /**
      * Render diagnostics page.
      */
     public function render_diagnostics_page() {
-        include WPAL_PLUGIN_DIR . 'templates/diagnostics.php';
+        include TracePilot_PLUGIN_DIR . 'templates/diagnostics.php';
     }
 }

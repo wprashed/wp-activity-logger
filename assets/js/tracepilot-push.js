@@ -5,7 +5,7 @@
     'use strict';
     
     // Check if push notifications are enabled
-    const pushEnabled = WPAL_PUSH && WPAL_PUSH.enabled === '1';
+    const pushEnabled = TracePilot_PUSH && TracePilot_PUSH.enabled === '1';
     
     if (!pushEnabled) {
         return;
@@ -56,7 +56,7 @@
                 // Send authentication
                 socket.send(JSON.stringify({
                     action: 'authenticate',
-                    nonce: WPAL_PUSH.nonce
+                    nonce: TracePilot_PUSH.nonce
                 }));
             };
             
@@ -92,7 +92,7 @@
                 showNotification(message.data);
                 
                 // Update live feed if on dashboard page
-                if ($('#wpal-live-feed').length) {
+                if ($('#tracepilot-live-feed').length) {
                     prependToLiveFeed(message.data);
                 }
             }
@@ -111,8 +111,8 @@
             const title = 'Activity Log: ' + log.action;
             const options = {
                 body: 'User: ' + log.username + '\nIP: ' + log.ip,
-                icon: WPAL_PUSH.icon || '/wp-content/plugins/wp-activity-logger-pro/assets/img/notification-icon.png',
-                tag: 'wpal-notification'
+                icon: TracePilot_PUSH.icon || '/wp-content/plugins/wp-activity-logger-pro/assets/img/notification-icon.png',
+                tag: 'tracepilot-notification'
             };
             
             const notification = new Notification(title, options);
@@ -122,8 +122,8 @@
                 notification.close();
                 
                 // Navigate to logs page if not already there
-                if (!window.location.href.includes('page=wpal-logs')) {
-                    window.location.href = WPAL_PUSH.logs_url;
+                if (!window.location.href.includes('page=wp-activity-logger-pro-logs')) {
+                    window.location.href = TracePilot_PUSH.logs_url;
                 }
             };
         }
@@ -145,11 +145,11 @@
         html += '</div>';
         html += '</div>';
         
-        const $newItem = $(html).prependTo('#wpal-live-feed');
+        const $newItem = $(html).prependTo('#tracepilot-live-feed');
         $newItem.slideDown();
         
         // Remove oldest item if there are more than 10
-        const $items = $('#wpal-live-feed .live-feed-item');
+        const $items = $('#tracepilot-live-feed .live-feed-item');
         if ($items.length > 10) {
             $items.last().slideUp(function() {
                 $(this).remove();
@@ -166,7 +166,7 @@
         
         if (Notification.permission === 'default') {
             // Only request permission if the user is on the settings page
-            if (window.location.href.includes('page=wpal-settings')) {
+            if (window.location.href.includes('page=wp-activity-logger-pro-settings')) {
                 Notification.requestPermission();
             }
         }

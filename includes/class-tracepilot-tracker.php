@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Tracker {
+class TracePilot_Tracker {
     /**
      * Constructor
      */
@@ -66,6 +66,7 @@ class WPAL_Tracker {
         add_action('wp_ajax_edit-theme-plugin-file', array($this, 'track_file_edit'), 1);
         
         // Track custom events
+        add_action('tracepilot_track_custom_event', array($this, 'track_custom_event'), 10, 3);
         add_action('wpal_track_custom_event', array($this, 'track_custom_event'), 10, 3);
     }
 
@@ -80,7 +81,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'user_login',
             sprintf(__('User %s logged in', 'wp-activity-logger-pro'), $user_login),
             'info',
@@ -114,7 +115,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'user_logout',
             sprintf(__('User %s logged out', 'wp-activity-logger-pro'), $user->user_login),
             'info',
@@ -138,7 +139,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'login_failed',
             sprintf(__('Failed login attempt for user %s', 'wp-activity-logger-pro'), $username),
             'warning',
@@ -170,7 +171,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'user_registered',
             sprintf(__('New user registered: %s', 'wp-activity-logger-pro'), $user->user_login),
             'info',
@@ -205,7 +206,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'profile_updated',
             sprintf(__('User profile updated: %s', 'wp-activity-logger-pro'), $user->user_login),
             'info',
@@ -232,7 +233,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'password_reset',
             sprintf(__('Password reset for user %s', 'wp-activity-logger-pro'), $user->user_login),
             'info',
@@ -298,7 +299,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             $action,
             $message,
             'info',
@@ -356,7 +357,7 @@ class WPAL_Tracker {
         $user_data = $this->get_user_data($user);
         $geo_data = $this->get_geolocation_data();
 
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'post_updated',
             sprintf(__('%s updated: %s', 'wp-activity-logger-pro'), ucfirst($post_after->post_type), $post_after->post_title),
             'info',
@@ -404,7 +405,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'comment_added',
             sprintf(__('Comment added to %s: %s', 'wp-activity-logger-pro'), $post->post_title, wp_trim_words($comment->comment_content, 10)),
             'info',
@@ -453,7 +454,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'comment_updated',
             sprintf(__('Comment updated on %s', 'wp-activity-logger-pro'), $post->post_title),
             'info',
@@ -502,7 +503,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'comment_trashed',
             sprintf(__('Comment trashed on %s', 'wp-activity-logger-pro'), $post->post_title),
             'info',
@@ -550,7 +551,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'comment_spam',
             sprintf(__('Comment marked as spam on %s', 'wp-activity-logger-pro'), $post->post_title),
             'info',
@@ -598,7 +599,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'comment_unspam',
             sprintf(__('Comment unmarked as spam on %s', 'wp-activity-logger-pro'), $post->post_title),
             'info',
@@ -646,7 +647,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'comment_deleted',
             sprintf(__('Comment deleted from %s', 'wp-activity-logger-pro'), $post->post_title),
             'info',
@@ -683,7 +684,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'plugin_activated',
             sprintf(__('Plugin activated: %s', 'wp-activity-logger-pro'), $plugin_data['Name']),
             'info',
@@ -719,7 +720,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'plugin_deactivated',
             sprintf(__('Plugin deactivated: %s', 'wp-activity-logger-pro'), $plugin_data['Name']),
             'info',
@@ -752,7 +753,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'theme_switched',
             sprintf(__('Theme switched from %s to %s', 'wp-activity-logger-pro'), $old_theme->get('Name'), $new_name),
             'info',
@@ -797,7 +798,7 @@ class WPAL_Tracker {
         );
 
         if ('core' === $options['type']) {
-            WPAL_Helpers::log_activity(
+            TracePilot_Helpers::log_activity(
                 'wordpress_updated',
                 sprintf(__('WordPress updated to version %s', 'wp-activity-logger-pro'), get_bloginfo('version')),
                 'info',
@@ -825,7 +826,7 @@ class WPAL_Tracker {
                 $plugin_name = !empty($plugin_data['Name']) ? $plugin_data['Name'] : $plugin_file;
                 $plugin_version = !empty($plugin_data['Version']) ? $plugin_data['Version'] : '';
 
-                WPAL_Helpers::log_activity(
+                TracePilot_Helpers::log_activity(
                     'plugin_updated',
                     sprintf(__('Plugin updated: %s', 'wp-activity-logger-pro'), $plugin_name),
                     'info',
@@ -852,7 +853,7 @@ class WPAL_Tracker {
                 $theme_name = $theme->exists() ? $theme->get('Name') : $stylesheet;
                 $theme_version = $theme->exists() ? $theme->get('Version') : '';
 
-                WPAL_Helpers::log_activity(
+                TracePilot_Helpers::log_activity(
                     'theme_updated',
                     sprintf(__('Theme updated: %s', 'wp-activity-logger-pro'), $theme_name),
                     'info',
@@ -893,7 +894,7 @@ class WPAL_Tracker {
         $geo_data = $this->get_geolocation_data();
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'user_role_changed',
             sprintf(__('User role changed for %s from %s to %s', 'wp-activity-logger-pro'), $user->user_login, implode(', ', $old_roles), $role),
             'info',
@@ -931,7 +932,7 @@ class WPAL_Tracker {
             'uninstall_plugins',
             'widget_',
             'theme_mods_',
-            'wpal_',
+            'tracepilot_',
             'wp_activity_logger_',
             'wp_mail_smtp',
             'wp_mail_smtp_',
@@ -1493,7 +1494,7 @@ class WPAL_Tracker {
         $value_formatted = $this->format_option_value($value);
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'option_updated',
             sprintf(__('Option updated: %s', 'wp-activity-logger-pro'), $option),
             'info',
@@ -1569,7 +1570,7 @@ class WPAL_Tracker {
         }
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             $action,
             sprintf(__('%s edited: %s', 'wp-activity-logger-pro'), ucfirst($file_type), $file),
             'warning',
@@ -1614,7 +1615,7 @@ class WPAL_Tracker {
         ));
         
         // Log activity
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             $action,
             $description,
             $severity,
@@ -1668,7 +1669,7 @@ class WPAL_Tracker {
         }
         
         // Try to get from cache
-        $cache_key = 'wpal_geo_' . md5($ip);
+        $cache_key = 'tracepilot_geo_' . md5($ip);
         $cached = get_transient($cache_key);
         
         if ($cached !== false) {
@@ -1691,8 +1692,8 @@ class WPAL_Tracker {
         }
         
         // Try to get geolocation data
-        if (class_exists('WPAL_Geolocation')) {
-            $geolocation = new WPAL_Geolocation();
+        if (class_exists('TracePilot_Geolocation')) {
+            $geolocation = new TracePilot_Geolocation();
             $geo_data = $geolocation->get_ip_geolocation($ip);
             
             if (!is_wp_error($geo_data)) {
@@ -1718,6 +1719,6 @@ class WPAL_Tracker {
      * Get IP address
      */
     private function get_ip_address() {
-        return class_exists('WPAL_Helpers') ? WPAL_Helpers::get_ip_address() : '';
+        return class_exists('TracePilot_Helpers') ? TracePilot_Helpers::get_ip_address() : '';
     }
 }

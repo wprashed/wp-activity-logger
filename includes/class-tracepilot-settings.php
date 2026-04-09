@@ -1,8 +1,8 @@
 <?php
 /**
- * WP Activity Logger Settings
+ * TracePilot settings.
  *
- * @package WP Activity Logger
+ * @package TracePilot
  * @since 1.1.0
  */
 
@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Settings {
+class TracePilot_Settings {
     /**
      * Constructor.
      */
@@ -18,8 +18,8 @@ class WPAL_Settings {
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_menu', array($this, 'add_settings_page'), 40);
         add_action('network_admin_menu', array($this, 'add_settings_page'), 40);
-        add_action('wp_ajax_wpal_save_settings', array($this, 'ajax_save_settings'));
-        add_action('wp_ajax_wpal_reset_settings', array($this, 'ajax_reset_settings'));
+        add_action('wp_ajax_tracepilot_save_settings', array($this, 'ajax_save_settings'));
+        add_action('wp_ajax_tracepilot_reset_settings', array($this, 'ajax_reset_settings'));
     }
 
     /**
@@ -27,11 +27,11 @@ class WPAL_Settings {
      */
     public function register_settings() {
         register_setting(
-            'wpal_options_group',
+            'tracepilot_options_group',
             'wpal_options',
             array(
                 'sanitize_callback' => array($this, 'sanitize_options'),
-                'default' => WPAL_Helpers::get_default_settings(),
+                'default' => TracePilot_Helpers::get_default_settings(),
             )
         );
     }
@@ -43,7 +43,7 @@ class WPAL_Settings {
      * @return array
      */
     public function sanitize_options($options) {
-        $defaults = WPAL_Helpers::get_default_settings();
+        $defaults = TracePilot_Helpers::get_default_settings();
         if (!is_array($options)) {
             return $defaults;
         }
@@ -133,7 +133,7 @@ class WPAL_Settings {
             'wp-activity-logger-pro',
             __('Settings', 'wp-activity-logger-pro'),
             __('Settings', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-settings',
             array($this, 'render_settings_page')
         );
@@ -143,22 +143,22 @@ class WPAL_Settings {
      * Render page.
      */
     public function render_settings_page() {
-        include WPAL_PLUGIN_DIR . 'templates/settings.php';
+        include TracePilot_PLUGIN_DIR . 'templates/settings.php';
     }
 
     /**
      * AJAX save settings.
      */
     public function ajax_save_settings() {
-        check_ajax_referer('wpal_nonce', 'nonce');
+        check_ajax_referer('tracepilot_nonce', 'nonce');
 
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
         $raw = isset($_POST['wpal_options']) ? (array) $_POST['wpal_options'] : array();
         $raw = wp_unslash($raw);
-        $current = WPAL_Helpers::get_settings();
+        $current = TracePilot_Helpers::get_settings();
         $replace_mode = !empty($_POST['replace_mode']);
         $merged = $replace_mode ? $raw : array_merge($current, $raw);
         $sanitized = $this->sanitize_options($merged);
@@ -170,9 +170,9 @@ class WPAL_Settings {
         update_option('wpal_options', $sanitized);
         update_option('wpal_settings', $sanitized);
 
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'settings_updated',
-            __('Activity Logger settings updated', 'wp-activity-logger-pro'),
+            __('TracePilot settings updated', 'wp-activity-logger-pro'),
             'info'
         );
 
@@ -183,19 +183,19 @@ class WPAL_Settings {
      * AJAX reset settings.
      */
     public function ajax_reset_settings() {
-        check_ajax_referer('wpal_nonce', 'nonce');
+        check_ajax_referer('tracepilot_nonce', 'nonce');
 
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
-        $defaults = WPAL_Helpers::get_default_settings();
+        $defaults = TracePilot_Helpers::get_default_settings();
         update_option('wpal_options', $defaults);
         update_option('wpal_settings', $defaults);
 
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'settings_reset',
-            __('Activity Logger settings reset to defaults', 'wp-activity-logger-pro'),
+            __('TracePilot settings reset to defaults', 'wp-activity-logger-pro'),
             'warning'
         );
 

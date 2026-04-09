@@ -7,92 +7,92 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$gsc = new WPAL_Google_Search_Console();
+$gsc = new TracePilot_Google_Search_Console();
 $is_connected = $gsc->is_connected();
 $sites = $is_connected ? $gsc->get_sites() : array();
-$options = get_option('wpal_gsc_options', array());
+$options = get_option('tracepilot_gsc_options', array());
 ?>
 
-<div class="wrap wpal-wrap">
-    <section class="wpal-hero wpal-hero-compact">
+<div class="wrap tracepilot-wrap">
+    <section class="tracepilot-hero tracepilot-hero-compact">
         <div>
-            <p class="wpal-eyebrow"><?php esc_html_e('Search performance', 'wp-activity-logger-pro'); ?></p>
-            <h1 class="wpal-page-title"><?php esc_html_e('Google Search Console', 'wp-activity-logger-pro'); ?></h1>
-            <p class="wpal-hero-copy"><?php esc_html_e('Connect Search Console to compare search visibility with on-site activity and operational events.', 'wp-activity-logger-pro'); ?></p>
+            <p class="tracepilot-eyebrow"><?php esc_html_e('Search performance', 'wp-activity-logger-pro'); ?></p>
+            <h1 class="tracepilot-page-title"><?php esc_html_e('Google Search Console', 'wp-activity-logger-pro'); ?></h1>
+            <p class="tracepilot-hero-copy"><?php esc_html_e('Connect Search Console to compare search visibility with on-site activity and operational events.', 'wp-activity-logger-pro'); ?></p>
         </div>
         <?php if ($is_connected) : ?>
-            <div class="wpal-hero-actions">
-                <button id="wpal-gsc-disconnect" class="wpal-btn wpal-btn-danger"><?php esc_html_e('Disconnect', 'wp-activity-logger-pro'); ?></button>
+            <div class="tracepilot-hero-actions">
+                <button id="tracepilot-gsc-disconnect" class="tracepilot-btn tracepilot-btn-danger"><?php esc_html_e('Disconnect', 'wp-activity-logger-pro'); ?></button>
             </div>
         <?php endif; ?>
     </section>
 
     <?php if (!$is_connected) : ?>
-        <section class="wpal-split">
-            <article class="wpal-panel">
-                <div class="wpal-panel-head">
+        <section class="tracepilot-split">
+            <article class="tracepilot-panel">
+                <div class="tracepilot-panel-head">
                     <div>
                         <h2><?php esc_html_e('Connection Settings', 'wp-activity-logger-pro'); ?></h2>
                         <p><?php esc_html_e('Enter your Google OAuth client details and then authorize the plugin.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 </div>
-                <form method="post" action="options.php" class="wpal-form-stack">
-                    <?php settings_fields('wpal_gsc_options'); ?>
+                <form method="post" action="options.php" class="tracepilot-form-stack">
+                    <?php settings_fields('tracepilot_gsc_options'); ?>
                     <label>
                         <span><?php esc_html_e('Google API Client ID', 'wp-activity-logger-pro'); ?></span>
-                        <input type="text" name="wpal_gsc_options[client_id]" class="wpal-input" value="<?php echo esc_attr(isset($options['client_id']) ? $options['client_id'] : ''); ?>" required>
+                        <input type="text" name="tracepilot_gsc_options[client_id]" class="tracepilot-input" value="<?php echo esc_attr(isset($options['client_id']) ? $options['client_id'] : ''); ?>" required>
                     </label>
                     <label>
                         <span><?php esc_html_e('Google API Client Secret', 'wp-activity-logger-pro'); ?></span>
-                        <input type="password" name="wpal_gsc_options[client_secret]" class="wpal-input" value="<?php echo esc_attr(isset($options['client_secret']) ? $options['client_secret'] : ''); ?>" required>
+                        <input type="password" name="tracepilot_gsc_options[client_secret]" class="tracepilot-input" value="<?php echo esc_attr(isset($options['client_secret']) ? $options['client_secret'] : ''); ?>" required>
                     </label>
-                    <div class="wpal-inline-actions">
-                        <button type="submit" class="wpal-btn wpal-btn-primary"><?php esc_html_e('Save Credentials', 'wp-activity-logger-pro'); ?></button>
+                    <div class="tracepilot-inline-actions">
+                        <button type="submit" class="tracepilot-btn tracepilot-btn-primary"><?php esc_html_e('Save Credentials', 'wp-activity-logger-pro'); ?></button>
                         <?php if (!empty($options['client_id']) && !empty($options['client_secret'])) : ?>
-                            <a href="<?php echo esc_url($gsc->get_auth_url()); ?>" class="wpal-btn wpal-btn-secondary"><?php esc_html_e('Connect to Google', 'wp-activity-logger-pro'); ?></a>
+                            <a href="<?php echo esc_url($gsc->get_auth_url()); ?>" class="tracepilot-btn tracepilot-btn-secondary"><?php esc_html_e('Connect to Google', 'wp-activity-logger-pro'); ?></a>
                         <?php endif; ?>
                     </div>
                 </form>
             </article>
 
-            <article class="wpal-panel">
-                <div class="wpal-panel-head">
+            <article class="tracepilot-panel">
+                <div class="tracepilot-panel-head">
                     <div>
                         <h2><?php esc_html_e('Setup Checklist', 'wp-activity-logger-pro'); ?></h2>
                         <p><?php esc_html_e('Use these values inside Google Cloud Console when creating the OAuth app.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 </div>
-                <div class="wpal-stack">
-                    <div class="wpal-note"><?php esc_html_e('Enable the Google Search Console API in your selected Google Cloud project.', 'wp-activity-logger-pro'); ?></div>
-                    <div class="wpal-note"><?php esc_html_e('Create an OAuth client with application type set to Web application.', 'wp-activity-logger-pro'); ?></div>
+                <div class="tracepilot-stack">
+                    <div class="tracepilot-note"><?php esc_html_e('Enable the Google Search Console API in your selected Google Cloud project.', 'wp-activity-logger-pro'); ?></div>
+                    <div class="tracepilot-note"><?php esc_html_e('Create an OAuth client with application type set to Web application.', 'wp-activity-logger-pro'); ?></div>
                     <div>
                         <strong><?php esc_html_e('Authorized redirect URI', 'wp-activity-logger-pro'); ?></strong>
-                        <div class="wpal-code-inline"><?php echo esc_html(admin_url('admin.php?page=wp-activity-logger-pro-search-console&oauth=callback')); ?></div>
+                        <div class="tracepilot-code-inline"><?php echo esc_html(admin_url('admin.php?page=wp-activity-logger-pro-search-console&oauth=callback')); ?></div>
                     </div>
-                    <div class="wpal-note"><?php esc_html_e('After saving the client ID and secret here, click “Connect to Google” to complete authorization.', 'wp-activity-logger-pro'); ?></div>
+                    <div class="tracepilot-note"><?php esc_html_e('After saving the client ID and secret here, click “Connect to Google” to complete authorization.', 'wp-activity-logger-pro'); ?></div>
                 </div>
             </article>
         </section>
     <?php else : ?>
-        <section class="wpal-panel">
-            <div class="wpal-panel-head">
+        <section class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Connected Properties', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('Search Console is connected. Choose a property below if you want to extend this page with reports next.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
             <?php if (empty($sites)) : ?>
-                <div class="wpal-empty-panel">
+                <div class="tracepilot-empty-panel">
                     <strong><?php esc_html_e('No properties returned', 'wp-activity-logger-pro'); ?></strong>
                     <p><?php esc_html_e('The Google account is connected, but no Search Console sites were returned yet.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             <?php else : ?>
-                <div class="wpal-list">
+                <div class="tracepilot-list">
                     <?php foreach ($sites as $site) : ?>
-                        <div class="wpal-list-row">
+                        <div class="tracepilot-list-row">
                             <div>
                                 <strong><?php echo esc_html($site->getSiteUrl()); ?></strong>
-                                <div class="wpal-list-subtext"><?php echo esc_html($site->getPermissionLevel()); ?></div>
+                                <div class="tracepilot-list-subtext"><?php echo esc_html($site->getPermissionLevel()); ?></div>
                             </div>
                         </div>
                     <?php endforeach; ?>

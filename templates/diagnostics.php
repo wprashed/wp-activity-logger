@@ -7,14 +7,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$diagnostics = wp_activity_logger_pro()->diagnostics;
+$diagnostics = tracepilot_for_wordpress()->diagnostics;
 $report = $diagnostics->get_latest_report();
 if (empty($report)) {
     $report = $diagnostics->run_diagnostics(false);
 }
 
 $history = $diagnostics->get_scan_history(8);
-$client_errors = get_option(WPAL_Diagnostics::CLIENT_ERRORS_OPTION, array());
+$client_errors = get_option(TracePilot_Diagnostics::CLIENT_ERRORS_OPTION, array());
 $client_errors = is_array($client_errors) ? array_slice($client_errors, 0, 5) : array();
 $safe_mode = !empty($report['safe_mode']) && is_array($report['safe_mode']) ? $report['safe_mode'] : $diagnostics->get_safe_mode_status();
 $issues = !empty($report['issues']) && is_array($report['issues']) ? $report['issues'] : array();
@@ -53,66 +53,66 @@ if ($health_score < 60) {
 $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] : __('Ask things like “Why is my site slow?” or “What should I disable first?”', 'wp-activity-logger-pro');
 ?>
 
-<div class="wrap wpal-wrap">
-    <section class="wpal-hero wpal-hero-compact">
+<div class="wrap tracepilot-wrap">
+    <section class="tracepilot-hero tracepilot-hero-compact">
         <div>
-            <p class="wpal-eyebrow"><?php esc_html_e('System scanner', 'wp-activity-logger-pro'); ?></p>
-            <h1 class="wpal-page-title"><?php esc_html_e('Diagnostics & Conflict Detection', 'wp-activity-logger-pro'); ?></h1>
-            <p class="wpal-hero-copy"><?php esc_html_e('Scan the site, explain technical problems in plain language, test fixes privately in admin-only safe mode, and track when issues started appearing.', 'wp-activity-logger-pro'); ?></p>
+            <p class="tracepilot-eyebrow"><?php esc_html_e('System scanner', 'wp-activity-logger-pro'); ?></p>
+            <h1 class="tracepilot-page-title"><?php esc_html_e('Diagnostics & Conflict Detection', 'wp-activity-logger-pro'); ?></h1>
+            <p class="tracepilot-hero-copy"><?php esc_html_e('Scan the site, explain technical problems in plain language, test fixes privately in admin-only safe mode, and track when issues started appearing.', 'wp-activity-logger-pro'); ?></p>
         </div>
-        <div class="wpal-hero-actions">
-            <button type="button" class="wpal-btn wpal-btn-primary" id="wpal-run-diagnostics"><?php esc_html_e('Run Full Scan', 'wp-activity-logger-pro'); ?></button>
+        <div class="tracepilot-hero-actions">
+            <button type="button" class="tracepilot-btn tracepilot-btn-primary" id="tracepilot-run-diagnostics"><?php esc_html_e('Run Full Scan', 'wp-activity-logger-pro'); ?></button>
             <?php if (!empty($safe_mode['enabled'])) : ?>
-                <button type="button" class="wpal-btn wpal-btn-outline-danger" id="wpal-disable-safe-mode"><?php esc_html_e('Disable Safe Mode', 'wp-activity-logger-pro'); ?></button>
+                <button type="button" class="tracepilot-btn tracepilot-btn-outline-danger" id="tracepilot-disable-safe-mode"><?php esc_html_e('Disable Safe Mode', 'wp-activity-logger-pro'); ?></button>
             <?php else : ?>
-                <button type="button" class="wpal-btn wpal-btn-secondary" id="wpal-enable-safe-mode"><?php esc_html_e('Start Safe Mode', 'wp-activity-logger-pro'); ?></button>
+                <button type="button" class="tracepilot-btn tracepilot-btn-secondary" id="tracepilot-enable-safe-mode"><?php esc_html_e('Start Safe Mode', 'wp-activity-logger-pro'); ?></button>
             <?php endif; ?>
         </div>
     </section>
 
-    <section class="wpal-stats-grid" id="wpal-diagnostics-summary">
-        <article class="wpal-stat-card wpal-score-card wpal-score-card-<?php echo esc_attr($score_tone); ?>">
-            <span class="wpal-stat-label"><?php esc_html_e('Health Score', 'wp-activity-logger-pro'); ?></span>
-            <span class="wpal-stat-value"><?php echo esc_html($health_score); ?></span>
-            <span class="wpal-stat-meta"><?php printf(esc_html__('Last scan: %s', 'wp-activity-logger-pro'), !empty($report['generated_at']) ? esc_html(WPAL_Helpers::format_datetime($report['generated_at'])) : esc_html__('Not saved yet', 'wp-activity-logger-pro')); ?></span>
+    <section class="tracepilot-stats-grid" id="tracepilot-diagnostics-summary">
+        <article class="tracepilot-stat-card tracepilot-score-card tracepilot-score-card-<?php echo esc_attr($score_tone); ?>">
+            <span class="tracepilot-stat-label"><?php esc_html_e('Health Score', 'wp-activity-logger-pro'); ?></span>
+            <span class="tracepilot-stat-value"><?php echo esc_html($health_score); ?></span>
+            <span class="tracepilot-stat-meta"><?php printf(esc_html__('Last scan: %s', 'wp-activity-logger-pro'), !empty($report['generated_at']) ? esc_html(TracePilot_Helpers::format_datetime($report['generated_at'])) : esc_html__('Not saved yet', 'wp-activity-logger-pro')); ?></span>
         </article>
-        <article class="wpal-stat-card">
-            <span class="wpal-stat-label"><?php esc_html_e('Critical Issues', 'wp-activity-logger-pro'); ?></span>
-            <span class="wpal-stat-value"><?php echo esc_html((int) $counts['critical']); ?></span>
-            <span class="wpal-stat-meta"><?php esc_html_e('Immediate breakage or severe risk', 'wp-activity-logger-pro'); ?></span>
+        <article class="tracepilot-stat-card">
+            <span class="tracepilot-stat-label"><?php esc_html_e('Critical Issues', 'wp-activity-logger-pro'); ?></span>
+            <span class="tracepilot-stat-value"><?php echo esc_html((int) $counts['critical']); ?></span>
+            <span class="tracepilot-stat-meta"><?php esc_html_e('Immediate breakage or severe risk', 'wp-activity-logger-pro'); ?></span>
         </article>
-        <article class="wpal-stat-card">
-            <span class="wpal-stat-label"><?php esc_html_e('Warnings', 'wp-activity-logger-pro'); ?></span>
-            <span class="wpal-stat-value"><?php echo esc_html((int) $counts['warning']); ?></span>
-            <span class="wpal-stat-meta"><?php esc_html_e('Likely instability or conflict signals', 'wp-activity-logger-pro'); ?></span>
+        <article class="tracepilot-stat-card">
+            <span class="tracepilot-stat-label"><?php esc_html_e('Warnings', 'wp-activity-logger-pro'); ?></span>
+            <span class="tracepilot-stat-value"><?php echo esc_html((int) $counts['warning']); ?></span>
+            <span class="tracepilot-stat-meta"><?php esc_html_e('Likely instability or conflict signals', 'wp-activity-logger-pro'); ?></span>
         </article>
-        <article class="wpal-stat-card">
-            <span class="wpal-stat-label"><?php esc_html_e('Inventory', 'wp-activity-logger-pro'); ?></span>
-            <span class="wpal-stat-value"><?php echo esc_html(count($active_plugins)); ?></span>
-            <span class="wpal-stat-meta"><?php printf(esc_html__('Plugins checked, theme: %s', 'wp-activity-logger-pro'), !empty($active_theme['name']) ? esc_html($active_theme['name']) : esc_html__('Unknown', 'wp-activity-logger-pro')); ?></span>
+        <article class="tracepilot-stat-card">
+            <span class="tracepilot-stat-label"><?php esc_html_e('Inventory', 'wp-activity-logger-pro'); ?></span>
+            <span class="tracepilot-stat-value"><?php echo esc_html(count($active_plugins)); ?></span>
+            <span class="tracepilot-stat-meta"><?php printf(esc_html__('Plugins checked, theme: %s', 'wp-activity-logger-pro'), !empty($active_theme['name']) ? esc_html($active_theme['name']) : esc_html__('Unknown', 'wp-activity-logger-pro')); ?></span>
         </article>
     </section>
 
-    <section class="wpal-panel wpal-diagnostics-shell">
-        <div class="wpal-panel-tabs" data-wpal-tabs>
-            <button type="button" class="wpal-panel-tab is-active" data-tab-target="overview"><?php esc_html_e('Overview', 'wp-activity-logger-pro'); ?></button>
-            <button type="button" class="wpal-panel-tab" data-tab-target="timeline"><?php esc_html_e('Timeline', 'wp-activity-logger-pro'); ?></button>
-            <button type="button" class="wpal-panel-tab" data-tab-target="assistant"><?php esc_html_e('Assistant', 'wp-activity-logger-pro'); ?></button>
-            <button type="button" class="wpal-panel-tab" data-tab-target="inventory"><?php esc_html_e('Inventory', 'wp-activity-logger-pro'); ?></button>
+    <section class="tracepilot-panel tracepilot-diagnostics-shell">
+        <div class="tracepilot-panel-tabs" data-tracepilot-tabs>
+            <button type="button" class="tracepilot-panel-tab is-active" data-tab-target="overview"><?php esc_html_e('Overview', 'wp-activity-logger-pro'); ?></button>
+            <button type="button" class="tracepilot-panel-tab" data-tab-target="timeline"><?php esc_html_e('Timeline', 'wp-activity-logger-pro'); ?></button>
+            <button type="button" class="tracepilot-panel-tab" data-tab-target="assistant"><?php esc_html_e('Assistant', 'wp-activity-logger-pro'); ?></button>
+            <button type="button" class="tracepilot-panel-tab" data-tab-target="inventory"><?php esc_html_e('Inventory', 'wp-activity-logger-pro'); ?></button>
         </div>
 
-        <div class="wpal-tab-panel is-active" data-tab-panel="overview">
-            <section class="wpal-diagnostics-layout">
-                <article class="wpal-panel wpal-diagnostics-scroller">
-            <div class="wpal-panel-head">
+        <div class="tracepilot-tab-panel is-active" data-tab-panel="overview">
+            <section class="tracepilot-diagnostics-layout">
+                <article class="tracepilot-panel tracepilot-diagnostics-scroller">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Issue List', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('Every issue is translated into plain language, then paired with the safest next steps.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-stack" id="wpal-diagnostics-issues">
+            <div class="tracepilot-stack" id="tracepilot-diagnostics-issues">
                 <?php if (empty($issues)) : ?>
-                    <div class="wpal-empty-panel">
+                    <div class="tracepilot-empty-panel">
                         <h3><?php esc_html_e('No active issues in the latest scan', 'wp-activity-logger-pro'); ?></h3>
                         <p><?php esc_html_e('Run a fresh scan after reproducing the problem if the site still feels unstable.', 'wp-activity-logger-pro'); ?></p>
                     </div>
@@ -120,24 +120,24 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php foreach ($issues as $issue) : ?>
                         <?php
                         $severity = isset($issue['severity']) ? $issue['severity'] : 'info';
-                        $badge_class = 'wpal-badge-info';
+                        $badge_class = 'tracepilot-badge-info';
                         if ('critical' === $severity) {
-                            $badge_class = 'wpal-badge-danger';
+                            $badge_class = 'tracepilot-badge-danger';
                         } elseif ('warning' === $severity) {
-                            $badge_class = 'wpal-badge-warning';
+                            $badge_class = 'tracepilot-badge-warning';
                         }
                         ?>
-                        <article class="wpal-detail-card wpal-issue-card">
-                            <div class="wpal-panel-head">
+                        <article class="tracepilot-detail-card tracepilot-issue-card">
+                            <div class="tracepilot-panel-head">
                                 <div>
                                     <h3><?php echo esc_html($issue['message']); ?></h3>
                                     <p><?php echo esc_html($issue['explanation']); ?></p>
                                 </div>
-                                <span class="wpal-badge <?php echo esc_attr($badge_class); ?>"><?php echo esc_html($severity_labels[$severity]); ?></span>
+                                <span class="tracepilot-badge <?php echo esc_attr($badge_class); ?>"><?php echo esc_html($severity_labels[$severity]); ?></span>
                             </div>
 
                             <?php if (!empty($issue['page']) || !empty($issue['raw_error'])) : ?>
-                                <div class="wpal-note">
+                                <div class="tracepilot-note">
                                     <?php if (!empty($issue['page'])) : ?>
                                         <strong><?php esc_html_e('Seen on:', 'wp-activity-logger-pro'); ?></strong>
                                         <?php echo ' ' . esc_html($issue['page']); ?>
@@ -149,20 +149,20 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                             <?php endif; ?>
 
                             <?php if (!empty($issue['plugins'])) : ?>
-                                <div class="wpal-pill-row">
+                                <div class="tracepilot-pill-row">
                                     <?php foreach ((array) $issue['plugins'] as $plugin_slug) : ?>
-                                        <span class="wpal-pill"><?php echo esc_html($plugin_slug); ?></span>
+                                        <span class="tracepilot-pill"><?php echo esc_html($plugin_slug); ?></span>
                                     <?php endforeach; ?>
                                 </div>
                             <?php endif; ?>
 
                             <?php if (!empty($issue['suggestions'])) : ?>
-                                <div class="wpal-suggestion-grid">
+                                <div class="tracepilot-suggestion-grid">
                                     <?php foreach ((array) $issue['suggestions'] as $suggestion) : ?>
-                                        <div class="wpal-suggestion-card">
-                                            <div class="wpal-suggestion-head">
+                                        <div class="tracepilot-suggestion-card">
+                                            <div class="tracepilot-suggestion-head">
                                                 <strong><?php echo esc_html($suggestion['title']); ?></strong>
-                                                <span class="wpal-meta-pill"><?php echo esc_html($confidence_labels[$suggestion['confidence']]); ?></span>
+                                                <span class="tracepilot-meta-pill"><?php echo esc_html($confidence_labels[$suggestion['confidence']]); ?></span>
                                             </div>
                                             <p><?php echo esc_html($suggestion['description']); ?></p>
                                         </div>
@@ -175,15 +175,15 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
             </div>
                 </article>
 
-                <article class="wpal-panel wpal-diagnostics-side">
-            <div class="wpal-panel-head">
+                <article class="tracepilot-panel tracepilot-diagnostics-side">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Safe Mode Debugging', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('Disable selected plugins only for your own admin session so visitors never see the experiment.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
 
-            <div class="wpal-note" id="wpal-safe-mode-status">
+            <div class="tracepilot-note" id="tracepilot-safe-mode-status">
                 <?php if (!empty($safe_mode['enabled'])) : ?>
                     <?php
                     printf(
@@ -196,11 +196,11 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                 <?php endif; ?>
             </div>
 
-            <div class="wpal-safe-mode-card">
-                <div class="wpal-form-stack">
+            <div class="tracepilot-safe-mode-card">
+                <div class="tracepilot-form-stack">
                 <label>
                     <span><?php esc_html_e('Plugins to hide in your admin session', 'wp-activity-logger-pro'); ?></span>
-                    <select multiple class="wpal-input wpal-select-tall wpal-safe-mode-select" id="wpal-safe-mode-plugins">
+                    <select multiple class="tracepilot-input tracepilot-select-tall tracepilot-safe-mode-select" id="tracepilot-safe-mode-plugins">
                         <?php foreach ($active_plugins as $plugin) : ?>
                             <option value="<?php echo esc_attr($plugin['file']); ?>" <?php selected(in_array($plugin['file'], (array) ($safe_mode['plugins'] ?? array()), true)); ?>>
                                 <?php
@@ -216,42 +216,42 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                 </label>
                 </div>
 
-                <div class="wpal-inline-actions">
-                    <button type="button" class="wpal-btn wpal-btn-secondary" id="wpal-enable-safe-mode-inline"><?php esc_html_e('Enable Safe Mode With Selection', 'wp-activity-logger-pro'); ?></button>
-                    <button type="button" class="wpal-btn wpal-btn-outline-danger" id="wpal-disable-safe-mode-inline"><?php esc_html_e('Restore Normal Session', 'wp-activity-logger-pro'); ?></button>
+                <div class="tracepilot-inline-actions">
+                    <button type="button" class="tracepilot-btn tracepilot-btn-secondary" id="tracepilot-enable-safe-mode-inline"><?php esc_html_e('Enable Safe Mode With Selection', 'wp-activity-logger-pro'); ?></button>
+                    <button type="button" class="tracepilot-btn tracepilot-btn-outline-danger" id="tracepilot-disable-safe-mode-inline"><?php esc_html_e('Restore Normal Session', 'wp-activity-logger-pro'); ?></button>
                 </div>
             </div>
 
             <?php if (!empty($conflict_plan['group_a']) || !empty($conflict_plan['group_b'])) : ?>
-                <div class="wpal-note">
+                <div class="tracepilot-note">
                     <strong><?php esc_html_e('Binary conflict test', 'wp-activity-logger-pro'); ?></strong>
                     <?php echo ' ' . esc_html($conflict_plan['summary']); ?>
                 </div>
-                <div class="wpal-suggestion-grid">
+                <div class="tracepilot-suggestion-grid">
                     <?php if (!empty($conflict_plan['group_a'])) : ?>
-                        <div class="wpal-suggestion-card">
-                            <div class="wpal-suggestion-head">
+                        <div class="tracepilot-suggestion-card">
+                            <div class="tracepilot-suggestion-head">
                                 <strong><?php esc_html_e('Test Group A Disabled', 'wp-activity-logger-pro'); ?></strong>
-                                <span class="wpal-meta-pill"><?php esc_html_e('Batch 1', 'wp-activity-logger-pro'); ?></span>
+                                <span class="tracepilot-meta-pill"><?php esc_html_e('Batch 1', 'wp-activity-logger-pro'); ?></span>
                             </div>
                             <p><?php echo esc_html(implode(', ', wp_list_pluck((array) $conflict_plan['group_a'], 'name'))); ?></p>
                             <button
                                 type="button"
-                                class="wpal-btn wpal-btn-outline-primary wpal-btn-sm wpal-safe-mode-preset"
+                                class="tracepilot-btn tracepilot-btn-outline-primary tracepilot-btn-sm tracepilot-safe-mode-preset"
                                 data-plugins="<?php echo esc_attr(wp_json_encode(wp_list_pluck((array) $conflict_plan['group_a'], 'file'))); ?>"
                             ><?php esc_html_e('Disable This Group In Safe Mode', 'wp-activity-logger-pro'); ?></button>
                         </div>
                     <?php endif; ?>
                     <?php if (!empty($conflict_plan['group_b'])) : ?>
-                        <div class="wpal-suggestion-card">
-                            <div class="wpal-suggestion-head">
+                        <div class="tracepilot-suggestion-card">
+                            <div class="tracepilot-suggestion-head">
                                 <strong><?php esc_html_e('Test Group B Disabled', 'wp-activity-logger-pro'); ?></strong>
-                                <span class="wpal-meta-pill"><?php esc_html_e('Batch 2', 'wp-activity-logger-pro'); ?></span>
+                                <span class="tracepilot-meta-pill"><?php esc_html_e('Batch 2', 'wp-activity-logger-pro'); ?></span>
                             </div>
                             <p><?php echo esc_html(implode(', ', wp_list_pluck((array) $conflict_plan['group_b'], 'name'))); ?></p>
                             <button
                                 type="button"
-                                class="wpal-btn wpal-btn-outline-primary wpal-btn-sm wpal-safe-mode-preset"
+                                class="tracepilot-btn tracepilot-btn-outline-primary tracepilot-btn-sm tracepilot-safe-mode-preset"
                                 data-plugins="<?php echo esc_attr(wp_json_encode(wp_list_pluck((array) $conflict_plan['group_b'], 'file'))); ?>"
                             ><?php esc_html_e('Disable This Group In Safe Mode', 'wp-activity-logger-pro'); ?></button>
                         </div>
@@ -262,36 +262,36 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
             </section>
         </div>
 
-        <div class="wpal-tab-panel" data-tab-panel="timeline">
-            <section class="wpal-grid wpal-grid-2">
-                <article class="wpal-panel">
-            <div class="wpal-panel-head">
+        <div class="tracepilot-tab-panel" data-tab-panel="timeline">
+            <section class="tracepilot-grid tracepilot-grid-2">
+                <article class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Issue Timeline', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('See when a problem first appeared, how often it has repeated, and whether it lines up with changes on the site.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-list" id="wpal-diagnostics-timeline">
+            <div class="tracepilot-list" id="tracepilot-diagnostics-timeline">
                 <?php if (empty($timeline)) : ?>
-                    <div class="wpal-empty-panel">
+                    <div class="tracepilot-empty-panel">
                         <p><?php esc_html_e('No tracked issue timeline yet. Run a saved scan to start building history.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 <?php else : ?>
                     <?php foreach ($timeline as $entry) : ?>
-                        <div class="wpal-list-row wpal-list-row-compact">
+                        <div class="tracepilot-list-row tracepilot-list-row-compact">
                             <div>
                                 <strong><?php echo esc_html($entry['message']); ?></strong>
-                                <div class="wpal-list-subtext">
+                                <div class="tracepilot-list-subtext">
                                     <?php
                                     printf(
                                         esc_html__('First seen %1$s, last seen %2$s', 'wp-activity-logger-pro'),
-                                        esc_html(WPAL_Helpers::format_datetime($entry['first_seen'])),
-                                        esc_html(WPAL_Helpers::format_datetime($entry['last_seen']))
+                                        esc_html(TracePilot_Helpers::format_datetime($entry['first_seen'])),
+                                        esc_html(TracePilot_Helpers::format_datetime($entry['last_seen']))
                                     );
                                     ?>
                                 </div>
                             </div>
-                            <div class="wpal-list-value">
+                            <div class="tracepilot-list-value">
                                 <?php
                                 printf(
                                     esc_html__('%d scans', 'wp-activity-logger-pro'),
@@ -305,34 +305,34 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
             </div>
                 </article>
 
-                <article class="wpal-panel">
-            <div class="wpal-panel-head">
+                <article class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Change Correlation', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('These pair the first appearance of a problem with nearby updates or configuration changes.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-list">
+            <div class="tracepilot-list">
                 <?php if (empty($correlations)) : ?>
-                    <div class="wpal-empty-panel">
+                    <div class="tracepilot-empty-panel">
                         <p><?php esc_html_e('No strong issue-to-change correlation has been found yet.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 <?php else : ?>
                     <?php foreach ($correlations as $correlation) : ?>
-                        <div class="wpal-list-row wpal-list-row-compact">
+                        <div class="tracepilot-list-row tracepilot-list-row-compact">
                             <div>
                                 <strong><?php echo esc_html($correlation['issue']); ?></strong>
-                                <div class="wpal-list-subtext">
+                                <div class="tracepilot-list-subtext">
                                     <?php
                                     printf(
                                         esc_html__('Started near %1$s at %2$s', 'wp-activity-logger-pro'),
                                         esc_html($correlation['change_label']),
-                                        esc_html(WPAL_Helpers::format_datetime($correlation['change_time']))
+                                        esc_html(TracePilot_Helpers::format_datetime($correlation['change_time']))
                                     );
                                     ?>
                                 </div>
                             </div>
-                            <span class="wpal-meta-pill">
+                            <span class="tracepilot-meta-pill">
                                 <?php
                                 printf(
                                     esc_html__('%s hours apart', 'wp-activity-logger-pro'),
@@ -348,81 +348,81 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
             </section>
         </div>
 
-        <div class="wpal-tab-panel" data-tab-panel="assistant">
-            <section class="wpal-grid wpal-grid-2">
-                <article class="wpal-panel">
-            <div class="wpal-panel-head">
+        <div class="tracepilot-tab-panel" data-tab-panel="assistant">
+            <section class="tracepilot-grid tracepilot-grid-2">
+                <article class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('AI Assistant Preview', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('This is a lightweight contextual assistant built from the current scan data. It is meant to guide the next debugging step quickly.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
 
-            <div class="wpal-form-stack">
+            <div class="tracepilot-form-stack">
                 <label>
                     <span><?php esc_html_e('Ask a question', 'wp-activity-logger-pro'); ?></span>
-                    <textarea class="wpal-input" id="wpal-diagnostics-question" placeholder="<?php echo esc_attr($assistant_hint); ?>"></textarea>
+                    <textarea class="tracepilot-input" id="tracepilot-diagnostics-question" placeholder="<?php echo esc_attr($assistant_hint); ?>"></textarea>
                 </label>
             </div>
 
-            <div class="wpal-inline-actions">
-                <button type="button" class="wpal-btn wpal-btn-primary" id="wpal-ask-diagnostics-ai"><?php esc_html_e('Get Answer', 'wp-activity-logger-pro'); ?></button>
+            <div class="tracepilot-inline-actions">
+                <button type="button" class="tracepilot-btn tracepilot-btn-primary" id="tracepilot-ask-diagnostics-ai"><?php esc_html_e('Get Answer', 'wp-activity-logger-pro'); ?></button>
             </div>
 
-            <div class="wpal-note" id="wpal-diagnostics-answer">
+            <div class="tracepilot-note" id="tracepilot-diagnostics-answer">
                 <?php esc_html_e('Ask about slowness, conflicts, what to disable first, or what the latest scan means.', 'wp-activity-logger-pro'); ?>
             </div>
                 </article>
 
-                <article class="wpal-panel">
-            <div class="wpal-panel-head">
+                <article class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Recent Browser & Runtime Signals', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('JavaScript errors collected from the browser can reveal conflicts that never make it into PHP logs.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-list">
+            <div class="tracepilot-list">
                 <?php if (empty($client_errors)) : ?>
-                    <div class="wpal-empty-panel">
+                    <div class="tracepilot-empty-panel">
                         <p><?php esc_html_e('No browser-side runtime errors have been captured recently.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 <?php else : ?>
                     <?php foreach ($client_errors as $entry) : ?>
-                        <div class="wpal-list-row wpal-list-row-compact">
+                        <div class="tracepilot-list-row tracepilot-list-row-compact">
                             <div>
                                 <strong><?php echo esc_html($entry['message']); ?></strong>
-                                <div class="wpal-list-subtext">
+                                <div class="tracepilot-list-subtext">
                                     <?php
                                     printf(
                                         esc_html__('%1$s on %2$s', 'wp-activity-logger-pro'),
-                                        esc_html(WPAL_Helpers::format_datetime($entry['time'])),
+                                        esc_html(TracePilot_Helpers::format_datetime($entry['time'])),
                                         esc_html(!empty($entry['page']) ? $entry['page'] : __('Unknown page', 'wp-activity-logger-pro'))
                                     );
                                     ?>
                                 </div>
                             </div>
-                            <span class="wpal-meta-pill"><?php echo esc_html(!empty($entry['source']) ? $entry['source'] : __('Browser', 'wp-activity-logger-pro')); ?></span>
+                            <span class="tracepilot-meta-pill"><?php echo esc_html(!empty($entry['source']) ? $entry['source'] : __('Browser', 'wp-activity-logger-pro')); ?></span>
                         </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
                 </article>
 
-                <article class="wpal-panel">
-            <div class="wpal-panel-head">
+                <article class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
                 <div>
                     <h2><?php esc_html_e('Recent Scan History', 'wp-activity-logger-pro'); ?></h2>
                     <p><?php esc_html_e('Compare health score changes over time and see when the issue count started climbing.', 'wp-activity-logger-pro'); ?></p>
                 </div>
             </div>
-            <div class="wpal-list" id="wpal-diagnostics-history">
+            <div class="tracepilot-list" id="tracepilot-diagnostics-history">
                 <?php if (empty($history)) : ?>
-                    <div class="wpal-empty-panel">
+                    <div class="tracepilot-empty-panel">
                         <p><?php esc_html_e('No saved scan history yet. Run the scanner to create the first history point.', 'wp-activity-logger-pro'); ?></p>
                     </div>
                 <?php else : ?>
                     <?php foreach ($history as $entry) : ?>
-                        <div class="wpal-list-row wpal-list-row-compact">
+                        <div class="tracepilot-list-row tracepilot-list-row-compact">
                             <div>
                                 <strong>
                                     <?php
@@ -432,12 +432,12 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                                     );
                                     ?>
                                 </strong>
-                                <div class="wpal-list-subtext"><?php echo esc_html(WPAL_Helpers::format_datetime($entry['generated_at'])); ?></div>
+                                <div class="tracepilot-list-subtext"><?php echo esc_html(TracePilot_Helpers::format_datetime($entry['generated_at'])); ?></div>
                             </div>
-                            <div class="wpal-history-inline">
-                                <span class="wpal-badge wpal-badge-danger"><?php echo esc_html((int) ($entry['counts']['critical'] ?? 0)); ?> <?php esc_html_e('critical', 'wp-activity-logger-pro'); ?></span>
-                                <span class="wpal-badge wpal-badge-warning"><?php echo esc_html((int) ($entry['counts']['warning'] ?? 0)); ?> <?php esc_html_e('warnings', 'wp-activity-logger-pro'); ?></span>
-                                <span class="wpal-badge wpal-badge-info"><?php echo esc_html((int) ($entry['counts']['info'] ?? 0)); ?> <?php esc_html_e('info', 'wp-activity-logger-pro'); ?></span>
+                            <div class="tracepilot-history-inline">
+                                <span class="tracepilot-badge tracepilot-badge-danger"><?php echo esc_html((int) ($entry['counts']['critical'] ?? 0)); ?> <?php esc_html_e('critical', 'wp-activity-logger-pro'); ?></span>
+                                <span class="tracepilot-badge tracepilot-badge-warning"><?php echo esc_html((int) ($entry['counts']['warning'] ?? 0)); ?> <?php esc_html_e('warnings', 'wp-activity-logger-pro'); ?></span>
+                                <span class="tracepilot-badge tracepilot-badge-info"><?php echo esc_html((int) ($entry['counts']['info'] ?? 0)); ?> <?php esc_html_e('info', 'wp-activity-logger-pro'); ?></span>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -447,56 +447,56 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
             </section>
         </div>
 
-        <div class="wpal-tab-panel" data-tab-panel="inventory">
-            <section class="wpal-panel">
-        <div class="wpal-panel-head">
+        <div class="tracepilot-tab-panel" data-tab-panel="inventory">
+            <section class="tracepilot-panel">
+        <div class="tracepilot-panel-head">
             <div>
                 <h2><?php esc_html_e('Scan Inventory', 'wp-activity-logger-pro'); ?></h2>
                 <p><?php esc_html_e('The scanner checks the active theme, plugin stack, server limits, WordPress debug status, REST API state, cron backlog, and the activity log database.', 'wp-activity-logger-pro'); ?></p>
             </div>
         </div>
-        <div class="wpal-inventory-grid">
-            <div class="wpal-metric-card">
+        <div class="tracepilot-inventory-grid">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('WordPress', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html($inventory['wordpress_version'] ?? ''); ?></strong>
                 <small><?php esc_html_e('Core version scanned', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('PHP', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html($inventory['php_version'] ?? ''); ?></strong>
                 <small><?php esc_html_e('Runtime powering the site', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('REST routes', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html(isset($inventory['rest_routes']) ? number_format_i18n((int) $inventory['rest_routes']) : 0); ?></strong>
                 <small><?php esc_html_e('Registered API endpoints', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('Cron events', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html(isset($inventory['cron_total']) ? number_format_i18n((int) $inventory['cron_total']) : 0); ?></strong>
                 <small><?php esc_html_e('Scheduled jobs discovered', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('WP_DEBUG', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo !empty($inventory['wp_debug']) ? esc_html__('Enabled', 'wp-activity-logger-pro') : esc_html__('Disabled', 'wp-activity-logger-pro'); ?></strong>
                 <small><?php esc_html_e('Debug mode state', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('Memory limit', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html($inventory['memory_limit'] ?? ''); ?></strong>
                 <small><?php esc_html_e('Current PHP memory ceiling', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('Max execution time', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html($inventory['max_execution_time'] ?? ''); ?></strong>
                 <small><?php esc_html_e('Maximum PHP request duration', 'wp-activity-logger-pro'); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('Log table', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo !empty($inventory['table_ready']) ? esc_html__('Ready', 'wp-activity-logger-pro') : esc_html__('Missing', 'wp-activity-logger-pro'); ?></strong>
                 <small><?php printf(esc_html__('%d stored log rows', 'wp-activity-logger-pro'), isset($inventory['log_total']) ? (int) $inventory['log_total'] : 0); ?></small>
             </div>
-            <div class="wpal-metric-card">
+            <div class="tracepilot-metric-card">
                 <span><?php esc_html_e('Active theme', 'wp-activity-logger-pro'); ?></span>
                 <strong><?php echo esc_html(!empty($active_theme['name']) ? $active_theme['name'] : __('Unknown', 'wp-activity-logger-pro')); ?></strong>
                 <small><?php esc_html_e('Theme currently rendered publicly', 'wp-activity-logger-pro'); ?></small>

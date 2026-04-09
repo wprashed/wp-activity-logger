@@ -11,14 +11,14 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Threat_Detection {
+class TracePilot_Threat_Detection {
     /**
      * Constructor
      */
     public function __construct() {
-        add_action('wp_ajax_wpal_analyze_threats', array($this, 'ajax_analyze_threats'));
-        add_action('wpal_after_log_activity', array($this, 'analyze_log_for_threats'), 10, 5);
-        add_action('wpal_daily_cron', array($this, 'scheduled_threat_analysis'));
+        add_action('wp_ajax_tracepilot_analyze_threats', array($this, 'ajax_analyze_threats'));
+        add_action('tracepilot_after_log_activity', array($this, 'analyze_log_for_threats'), 10, 5);
+        add_action('tracepilot_daily_cron', array($this, 'scheduled_threat_analysis'));
     }
 
     /**
@@ -29,7 +29,7 @@ class WPAL_Threat_Detection {
             'wp-activity-logger-pro',
             __('Threat Detection', 'wp-activity-logger-pro'),
             __('Threat Detection', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-threat-detection',
             array($this, 'render_page')
         );
@@ -39,7 +39,7 @@ class WPAL_Threat_Detection {
      * Render page
      */
     public function render_page() {
-        include WPAL_PLUGIN_DIR . 'templates/threat-detection.php';
+        include TracePilot_PLUGIN_DIR . 'templates/threat-detection.php';
     }
     
     /**
@@ -47,12 +47,12 @@ class WPAL_Threat_Detection {
      */
     public function ajax_analyze_threats() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -70,8 +70,8 @@ class WPAL_Threat_Detection {
      */
     public function run_threat_analysis() {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         $threats = array();
         
@@ -467,8 +467,8 @@ class WPAL_Threat_Detection {
         }
         
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Count failed login attempts from this IP in the last hour
         $count = $wpdb->get_var($wpdb->prepare("
@@ -509,8 +509,8 @@ class WPAL_Threat_Detection {
         }
         
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Get user's previous login IPs
         $previous_ips = $wpdb->get_col($wpdb->prepare("
@@ -663,8 +663,8 @@ class WPAL_Threat_Detection {
             return;
         }
 
-        if (function_exists('wp_activity_logger_pro') && isset(wp_activity_logger_pro()->notifications)) {
-            wp_activity_logger_pro()->notifications->send_custom_notification($type, $message, 'error', array('subject' => $subject));
+        if (function_exists('tracepilot_for_wordpress') && isset(tracepilot_for_wordpress()->notifications)) {
+            tracepilot_for_wordpress()->notifications->send_custom_notification($type, $message, 'error', array('subject' => $subject));
         } else {
             wp_mail(get_option('admin_email'), $subject, $message);
         }
@@ -680,7 +680,7 @@ class WPAL_Threat_Detection {
         }
         
         // Try to get from cache
-        $cache_key = 'wpal_geo_' . md5($ip);
+        $cache_key = 'tracepilot_geo_' . md5($ip);
         $cached = get_transient($cache_key);
         
         if ($cached !== false) {

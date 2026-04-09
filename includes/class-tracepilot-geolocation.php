@@ -11,12 +11,12 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Geolocation {
+class TracePilot_Geolocation {
     /**
      * Constructor
      */
     public function __construct() {
-        add_action('wp_ajax_wpal_get_ip_geolocation', array($this, 'ajax_get_ip_geolocation'));
+        add_action('wp_ajax_tracepilot_get_ip_geolocation', array($this, 'ajax_get_ip_geolocation'));
     }
 
     /**
@@ -24,12 +24,12 @@ class WPAL_Geolocation {
      */
     public function ajax_get_ip_geolocation() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -70,7 +70,7 @@ class WPAL_Geolocation {
         }
         
         // Try to get from cache
-        $cache_key = 'wpal_geo_' . md5($ip);
+        $cache_key = 'tracepilot_geo_' . md5($ip);
         $cached = get_transient($cache_key);
         
         if ($cached !== false) {

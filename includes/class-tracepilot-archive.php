@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Archive {
+class TracePilot_Archive {
     /**
      * Archive table name
      */
@@ -23,10 +23,10 @@ class WPAL_Archive {
     public function __construct() {
         add_action('admin_menu', array($this, 'add_submenu_page'), 15);
         add_action('network_admin_menu', array($this, 'add_submenu_page'), 15);
-        add_action('wp_ajax_wpal_archive_log', array($this, 'ajax_archive_log'));
-        add_action('wp_ajax_wpal_archive_all_logs', array($this, 'ajax_archive_all_logs'));
-        add_action('wp_ajax_wpal_restore_log', array($this, 'ajax_restore_log'));
-        add_action('wp_ajax_wpal_delete_archived_log', array($this, 'ajax_delete_archived_log'));
+        add_action('wp_ajax_tracepilot_archive_log', array($this, 'ajax_archive_log'));
+        add_action('wp_ajax_tracepilot_archive_all_logs', array($this, 'ajax_archive_all_logs'));
+        add_action('wp_ajax_tracepilot_restore_log', array($this, 'ajax_restore_log'));
+        add_action('wp_ajax_tracepilot_delete_archived_log', array($this, 'ajax_delete_archived_log'));
         
         // Initialize archive table name
         self::init();
@@ -48,7 +48,7 @@ class WPAL_Archive {
             'wp-activity-logger-pro',
             __('Archive', 'wp-activity-logger-pro'),
             __('Archive', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-archive',
             array($this, 'render_page')
         );
@@ -58,7 +58,7 @@ class WPAL_Archive {
      * Render page
      */
     public function render_page() {
-        include WPAL_PLUGIN_DIR . 'templates/archive.php';
+        include TracePilot_PLUGIN_DIR . 'templates/archive.php';
     }
     
     /**
@@ -107,12 +107,12 @@ class WPAL_Archive {
      */
     public function ajax_archive_log() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -147,8 +147,8 @@ class WPAL_Archive {
      */
     public function archive_log($log_id) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         self::init();
         $archive_table = self::$archive_table;
         
@@ -208,7 +208,7 @@ class WPAL_Archive {
         $wpdb->query('COMMIT');
         
         // Log the archival
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'log_archived',
             sprintf(__('Log entry #%d was archived', 'wp-activity-logger-pro'), $log_id),
             'info'
@@ -222,12 +222,12 @@ class WPAL_Archive {
      */
     public function ajax_archive_all_logs() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -251,8 +251,8 @@ class WPAL_Archive {
      */
     public function archive_all_logs($filters = array()) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         self::init();
         $archive_table = self::$archive_table;
         
@@ -362,7 +362,7 @@ class WPAL_Archive {
         $wpdb->query('COMMIT');
         
         // Log the archival
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'logs_archived',
             sprintf(__('%d log entries were archived', 'wp-activity-logger-pro'), $archived_count),
             'info'
@@ -376,12 +376,12 @@ class WPAL_Archive {
      */
     public function ajax_restore_log() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -407,8 +407,8 @@ class WPAL_Archive {
      */
     public function restore_log($log_id) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         self::init();
         $archive_table = self::$archive_table;
         
@@ -466,7 +466,7 @@ class WPAL_Archive {
         $wpdb->query('COMMIT');
         
         // Log the restoration
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'log_restored',
             sprintf(__('Log entry #%d was restored from archive', 'wp-activity-logger-pro'), $log->original_id),
             'info'
@@ -480,12 +480,12 @@ class WPAL_Archive {
      */
     public function ajax_delete_archived_log() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -526,7 +526,7 @@ class WPAL_Archive {
         }
         
         // Log the deletion
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'archived_log_deleted',
             sprintf(__('Archived log entry #%d was deleted', 'wp-activity-logger-pro'), $log_id),
             'info'

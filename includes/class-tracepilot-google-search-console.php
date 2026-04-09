@@ -11,7 +11,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Google_Search_Console {
+class TracePilot_Google_Search_Console {
     /**
      * Google API client
      */
@@ -28,8 +28,8 @@ class WPAL_Google_Search_Console {
     public function __construct() {
         add_action('admin_init', array($this, 'register_settings'));
         add_action('admin_init', array($this, 'handle_oauth_callback'));
-        add_action('wp_ajax_wpal_gsc_fetch_data', array($this, 'ajax_fetch_data'));
-        add_action('wp_ajax_wpal_gsc_disconnect', array($this, 'ajax_disconnect'));
+        add_action('wp_ajax_tracepilot_gsc_fetch_data', array($this, 'ajax_fetch_data'));
+        add_action('wp_ajax_tracepilot_gsc_disconnect', array($this, 'ajax_disconnect'));
     }
 
     /**
@@ -39,8 +39,8 @@ class WPAL_Google_Search_Console {
      */
     public function register_settings() {
         register_setting(
-            'wpal_gsc_options',
-            'wpal_gsc_options',
+            'tracepilot_gsc_options',
+            'tracepilot_gsc_options',
             array(
                 'sanitize_callback' => array($this, 'sanitize_options'),
                 'default' => array(),
@@ -55,7 +55,7 @@ class WPAL_Google_Search_Console {
      * @return array
      */
     public function sanitize_options($options) {
-        $current = get_option('wpal_gsc_options', array());
+        $current = get_option('tracepilot_gsc_options', array());
         $options = is_array($options) ? $options : array();
 
         $sanitized = array(
@@ -78,7 +78,7 @@ class WPAL_Google_Search_Console {
             'wp-activity-logger-pro',
             __('Search Console', 'wp-activity-logger-pro'),
             __('Search Console', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-search-console',
             array($this, 'render_page')
         );
@@ -88,7 +88,7 @@ class WPAL_Google_Search_Console {
      * Render page
      */
     public function render_page() {
-        include WPAL_PLUGIN_DIR . 'templates/search-console.php';
+        include TracePilot_PLUGIN_DIR . 'templates/search-console.php';
     }
     
     /**
@@ -96,16 +96,16 @@ class WPAL_Google_Search_Console {
      */
     private function initialize_client() {
         if (!class_exists('Google_Client')) {
-            require_once WPAL_PLUGIN_DIR . 'vendor/autoload.php';
+            require_once TracePilot_PLUGIN_DIR . 'vendor/autoload.php';
         }
         
         $this->client = new Google_Client();
-        $this->client->setApplicationName('WP Activity Logger Pro');
+        $this->client->setApplicationName('TracePilot for WordPress');
         $this->client->setScopes(array('https://www.googleapis.com/auth/webmasters.readonly'));
         $this->client->setRedirectUri(admin_url('admin.php?page=wp-activity-logger-pro-search-console&oauth=callback'));
         
         // Get client ID and secret from options
-        $options = get_option('wpal_gsc_options', array());
+        $options = get_option('tracepilot_gsc_options', array());
         
         if (!empty($options['client_id']) && !empty($options['client_secret'])) {
             $this->client->setClientId($options['client_id']);
@@ -120,7 +120,7 @@ class WPAL_Google_Search_Console {
                     if ($this->client->getRefreshToken()) {
                         $this->client->fetchAccessTokenWithRefreshToken($this->client->getRefreshToken());
                         $options['access_token'] = $this->client->getAccessToken();
-                        update_option('wpal_gsc_options', $options);
+                        update_option('tracepilot_gsc_options', $options);
                     }
                 }
             }
@@ -146,7 +146,7 @@ class WPAL_Google_Search_Console {
         $code  = isset($_GET['code']) ? sanitize_text_field(wp_unslash($_GET['code'])) : '';
 
         if ('wp-activity-logger-pro-search-console' === $page && 'callback' === $oauth && !empty($code)) {
-            if (!WPAL_Helpers::current_user_can_manage()) {
+            if (!TracePilot_Helpers::current_user_can_manage()) {
                 return;
             }
 
@@ -157,7 +157,7 @@ class WPAL_Google_Search_Console {
 
                 if (isset($token['error'])) {
                     add_settings_error(
-                        'wpal_gsc',
+                        'tracepilot_gsc',
                         'oauth_error',
                         sprintf(
                             /* translators: %s: OAuth error message. */
@@ -167,16 +167,16 @@ class WPAL_Google_Search_Console {
                         'error'
                     );
                 } else {
-                    $options = get_option('wpal_gsc_options', array());
+                    $options = get_option('tracepilot_gsc_options', array());
                     $options['access_token'] = $token;
-                    update_option('wpal_gsc_options', $options);
+                    update_option('tracepilot_gsc_options', $options);
 
                     wp_safe_redirect(admin_url('admin.php?page=wp-activity-logger-pro-search-console&connected=1'));
                     exit;
                 }
             } catch (Exception $e) {
                 add_settings_error(
-                    'wpal_gsc',
+                    'tracepilot_gsc',
                     'oauth_exception',
                     sprintf(
                         /* translators: %s: Exception message returned during OAuth flow. */
@@ -193,7 +193,7 @@ class WPAL_Google_Search_Console {
      * Check if connected to Google Search Console
      */
     public function is_connected() {
-        $options = get_option('wpal_gsc_options', array());
+        $options = get_option('tracepilot_gsc_options', array());
         
         if (empty($options['client_id']) || empty($options['client_secret']) || empty($options['access_token'])) {
             return false;
@@ -252,12 +252,12 @@ class WPAL_Google_Search_Console {
      */
     public function ajax_fetch_data() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -298,8 +298,8 @@ class WPAL_Google_Search_Console {
      */
     private function get_log_data_for_correlation($start_date, $end_date) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         $logs_by_date = $wpdb->get_results($wpdb->prepare("
             SELECT 
@@ -377,19 +377,19 @@ class WPAL_Google_Search_Console {
      */
     public function ajax_disconnect() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
         // Delete access token
-        $options = get_option('wpal_gsc_options', array());
+        $options = get_option('tracepilot_gsc_options', array());
         unset($options['access_token']);
-        update_option('wpal_gsc_options', $options);
+        update_option('tracepilot_gsc_options', $options);
         
         wp_send_json_success(array('message' => __('Successfully disconnected from Google Search Console.', 'wp-activity-logger-pro')));
     }

@@ -1,20 +1,20 @@
 <?php
 /**
- * Export class for WP Activity Logger Pro.
+ * Export class for TracePilot for WordPress.
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class WPAL_Export {
+class TracePilot_Export {
     /**
      * Constructor.
      */
     public function __construct() {
         add_action('admin_menu', array($this, 'add_export_page'), 35);
         add_action('network_admin_menu', array($this, 'add_export_page'), 35);
-        add_action('wp_ajax_wpal_export_logs', array($this, 'export_logs'));
+        add_action('wp_ajax_tracepilot_export_logs', array($this, 'export_logs'));
     }
 
     /**
@@ -25,7 +25,7 @@ class WPAL_Export {
             'wp-activity-logger-pro',
             __('Export', 'wp-activity-logger-pro'),
             __('Export', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-export',
             array($this, 'render_export_page')
         );
@@ -35,16 +35,16 @@ class WPAL_Export {
      * Render export page.
      */
     public function render_export_page() {
-        include WPAL_PLUGIN_DIR . 'templates/export.php';
+        include TracePilot_PLUGIN_DIR . 'templates/export.php';
     }
 
     /**
      * Export logs.
      */
     public function export_logs() {
-        check_ajax_referer('wpal_nonce', 'nonce');
+        check_ajax_referer('tracepilot_nonce', 'nonce');
 
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_die(esc_html__('You do not have permission to export logs.', 'wp-activity-logger-pro'));
         }
 
@@ -52,8 +52,8 @@ class WPAL_Export {
         $format = in_array($format, array('csv', 'json', 'xml', 'pdf'), true) ? $format : 'csv';
 
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
 
         $where = array('1=1');
         $args = array();
@@ -114,7 +114,7 @@ class WPAL_Export {
             case 'pdf':
                 header('Content-Type: text/plain; charset=utf-8');
                 header('Content-Disposition: attachment; filename=' . $filename . '.txt');
-                echo esc_html__("WP Activity Logger Export\n\n", 'wp-activity-logger-pro');
+                echo esc_html__("TracePilot Export\n\n", 'wp-activity-logger-pro');
                 foreach ($logs as $log) {
                     echo esc_html(
                         sprintf(

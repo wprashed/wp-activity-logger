@@ -1,21 +1,21 @@
-# WP Activity Logger Pro - Developer Guide
+# TracePilot for WordPress - Developer Guide
 
 ## Introduction
 
-This guide is intended for developers who want to integrate with WP Activity Logger Pro, either to log custom events or to extend the plugin's functionality.
+This guide is intended for developers who want to integrate with TracePilot for WordPress, either to log custom events or to extend the plugin's functionality.
 
 ## Logging Custom Events
 
 ### Basic Usage
 
-To log a custom event, use the `WPAL_Helpers::log_activity()` method:
+To log a custom event, use the `TracePilot_Helpers::log_activity()` method:
 
 ```php
 // Make sure the helper class is initialized
-WPAL_Helpers::init();
+TracePilot_Helpers::init();
 
 // Log a simple activity
-WPAL_Helpers::log_activity(
+TracePilot_Helpers::log_activity(
     'custom_action_name',    // Action identifier
     'Description of action', // Human-readable description
     'info'                   // Severity: 'info', 'warning', or 'error'
@@ -28,7 +28,7 @@ For more detailed logging, you can include additional context:
 
 ```php
 // Log activity with context
-WPAL_Helpers::log_activity(
+TracePilot_Helpers::log_activity(
     'product_purchased',                  // Action identifier
     'User purchased Product X',           // Human-readable description
     'info',                               // Severity
@@ -57,7 +57,7 @@ When logging actions performed by users other than the current user:
 
 ```php
 // Log activity for a specific user
-WPAL_Helpers::log_activity(
+TracePilot_Helpers::log_activity(
     'custom_user_action',
     'User performed a custom action',
     'info',
@@ -71,55 +71,55 @@ WPAL_Helpers::log_activity(
 
 ### Actions
 
-#### `wpal_before_log_activity`
+#### `tracepilot_before_log_activity`
 
 Fired before an activity is logged.
 
 ```php
-add_action('wpal_before_log_activity', function($action, $description, $severity, $args) {
+add_action('tracepilot_before_log_activity', function($action, $description, $severity, $args) {
     // Do something before logging
 }, 10, 4);
 ```
 
-#### `wpal_after_log_activity`
+#### `tracepilot_after_log_activity`
 
 Fired after an activity has been logged.
 
 ```php
-add_action('wpal_after_log_activity', function($log_id, $action, $description, $severity, $args) {
+add_action('tracepilot_after_log_activity', function($log_id, $action, $description, $severity, $args) {
     // Do something after logging
 }, 10, 5);
 ```
 
-#### `wpal_log_deleted`
+#### `tracepilot_log_deleted`
 
 Fired when a log entry is deleted.
 
 ```php
-add_action('wpal_log_deleted', function($log_id) {
+add_action('tracepilot_log_deleted', function($log_id) {
     // Do something when a log is deleted
 }, 10, 1);
 ```
 
 ### Filters
 
-#### `wpal_log_data`
+#### `tracepilot_log_data`
 
 Filter the data before it's inserted into the database.
 
 ```php
-add_filter('wpal_log_data', function($log_data, $action, $description, $severity, $args) {
+add_filter('tracepilot_log_data', function($log_data, $action, $description, $severity, $args) {
     // Modify $log_data before it's saved
     return $log_data;
 }, 10, 5);
 ```
 
-#### `wpal_should_log_activity`
+#### `tracepilot_should_log_activity`
 
 Determine whether an activity should be logged.
 
 ```php
-add_filter('wpal_should_log_activity', function($should_log, $action, $description, $severity, $args) {
+add_filter('tracepilot_should_log_activity', function($should_log, $action, $description, $severity, $args) {
     if ($action === 'some_action_to_ignore') {
         return false;
     }
@@ -127,12 +127,12 @@ add_filter('wpal_should_log_activity', function($should_log, $action, $descripti
 }, 10, 5);
 ```
 
-#### `wpal_log_retention_days`
+#### `tracepilot_log_retention_days`
 
 Filter the number of days to keep logs.
 
 ```php
-add_filter('wpal_log_retention_days', function($days) {
+add_filter('tracepilot_log_retention_days', function($days) {
     return 60; // Keep logs for 60 days
 }, 10, 1);
 ```
@@ -142,7 +142,7 @@ add_filter('wpal_log_retention_days', function($days) {
 The plugin stores logs in a custom table with the following structure:
 
 ```sql
-CREATE TABLE {$wpdb->prefix}wpal_activity_log (
+CREATE TABLE {$wpdb->prefix}tracepilot_activity_log (
     id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
     time datetime NOT NULL,
     user_id bigint(20) unsigned DEFAULT NULL,
@@ -172,7 +172,7 @@ CREATE TABLE {$wpdb->prefix}wpal_activity_log (
 To add a custom widget to the dashboard:
 
 ```php
-add_filter('wpal_dashboard_widgets', function($widgets) {
+add_filter('tracepilot_dashboard_widgets', function($widgets) {
     $widgets['my_custom_widget'] = array(
         'title' => 'My Custom Widget',
         'callback' => 'my_custom_widget_callback',
@@ -190,7 +190,7 @@ function my_custom_widget_callback() {
 ### Adding Export Formats
 
 ```php
-add_filter('wpal_export_formats', function($formats) {
+add_filter('tracepilot_export_formats', function($formats) {
     $formats['custom_format'] = array(
         'label' => 'My Custom Format',
         'callback' => 'my_custom_export_callback',
@@ -208,7 +208,7 @@ function my_custom_export_callback($logs, $args) {
 ### Adding Custom Notification Channels
 
 ```php
-add_filter('wpal_notification_channels', function($channels) {
+add_filter('tracepilot_notification_channels', function($channels) {
     $channels['custom_channel'] = array(
         'label' => 'My Custom Channel',
         'callback' => 'my_custom_notification_callback',
@@ -241,7 +241,7 @@ function my_custom_notification_callback($event, $log_data) {
 ### Compatibility
 
 * Prefix actions with your plugin/theme slug
-* Check for `WPAL_Helpers` class existence
+* Check for `TracePilot_Helpers` class existence
 * Use provided hooks and filters
 
 ## Example Implementations
@@ -252,11 +252,11 @@ function my_custom_notification_callback($event, $log_data) {
 add_action('woocommerce_order_status_completed', 'log_woocommerce_purchase');
 
 function log_woocommerce_purchase($order_id) {
-    if (!class_exists('WPAL_Helpers')) {
+    if (!class_exists('TracePilot_Helpers')) {
         return;
     }
 
-    WPAL_Helpers::init();
+    TracePilot_Helpers::init();
 
     $order = wc_get_order($order_id);
     $items = $order->get_items();
@@ -266,7 +266,7 @@ function log_woocommerce_purchase($order_id) {
         $products[] = $item->get_name() . ' (x' . $item->get_quantity() . ')';
     }
 
-    WPAL_Helpers::log_activity(
+    TracePilot_Helpers::log_activity(
         'woocommerce_purchase',
         sprintf('Order #%s completed for %s', $order->get_order_number(), $order->get_formatted_billing_full_name()),
         'info',
@@ -290,15 +290,15 @@ function log_woocommerce_purchase($order_id) {
 add_action('save_post_my_custom_post', 'log_custom_post_save', 10, 3);
 
 function log_custom_post_save($post_id, $post, $update) {
-    if (!class_exists('WPAL_Helpers') || wp_is_post_revision($post_id)) {
+    if (!class_exists('TracePilot_Helpers') || wp_is_post_revision($post_id)) {
         return;
     }
 
-    WPAL_Helpers::init();
+    TracePilot_Helpers::init();
 
     $action = $update ? 'updated' : 'created';
 
-    WPAL_Helpers::log_activity(
+    TracePilot_Helpers::log_activity(
         'custom_post_' . $action,
         sprintf('Custom post "%s" was %s', get_the_title($post_id), $action),
         'info',
@@ -313,4 +313,4 @@ function log_custom_post_save($post_id, $post, $update) {
 
 ## Conclusion
 
-WP Activity Logger Pro provides a robust framework for tracking activities in WordPress. Use the provided API and hooks to integrate your plugins and themes for comprehensive logging.
+TracePilot for WordPress provides a robust framework for tracking activities in WordPress. Use the provided API and hooks to integrate your plugins and themes for comprehensive logging.

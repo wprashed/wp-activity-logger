@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Helpers {
+class TracePilot_Helpers {
     /**
      * Database table name.
      *
@@ -252,6 +252,7 @@ class WPAL_Helpers {
         }
 
         $log_id = (int) $wpdb->insert_id;
+        do_action('tracepilot_after_log_activity', $log_id, $action, $description, $severity, $args);
         do_action('wpal_after_log_activity', $log_id, $action, $description, $severity, $args);
 
         return $log_id;
@@ -574,7 +575,7 @@ class WPAL_Helpers {
         $data = isset($map[$severity]) ? $map[$severity] : $map['info'];
 
         return sprintf(
-            '<span class="wpal-badge wpal-badge-%1$s">%2$s</span>',
+            '<span class="tracepilot-badge tracepilot-badge-%1$s">%2$s</span>',
             esc_attr($data['class']),
             esc_html($data['label'])
         );

@@ -7,24 +7,24 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Diagnostics {
-    const REPORT_OPTION = 'wpal_system_scan_report';
-    const HISTORY_OPTION = 'wpal_system_scan_history';
-    const TIMELINE_OPTION = 'wpal_issue_timeline';
-    const CLIENT_ERRORS_OPTION = 'wpal_client_errors';
-    const SAFE_MODE_COOKIE = 'wpal_safe_mode';
+class TracePilot_Diagnostics {
+    const REPORT_OPTION = 'tracepilot_system_scan_report';
+    const HISTORY_OPTION = 'tracepilot_system_scan_history';
+    const TIMELINE_OPTION = 'tracepilot_issue_timeline';
+    const CLIENT_ERRORS_OPTION = 'tracepilot_client_errors';
+    const SAFE_MODE_COOKIE = 'tracepilot_safe_mode';
     const SAFE_MODE_TTL = 7200;
 
     /**
      * Constructor.
      */
     public function __construct() {
-        add_action('wp_ajax_wpal_run_diagnostics', array($this, 'ajax_run_diagnostics'));
-        add_action('wp_ajax_wpal_enable_safe_mode', array($this, 'ajax_enable_safe_mode'));
-        add_action('wp_ajax_wpal_disable_safe_mode', array($this, 'ajax_disable_safe_mode'));
-        add_action('wp_ajax_wpal_ask_diagnostics_ai', array($this, 'ajax_ask_diagnostics_ai'));
-        add_action('wp_ajax_wpal_capture_client_error', array($this, 'ajax_capture_client_error'));
-        add_action('wp_ajax_nopriv_wpal_capture_client_error', array($this, 'ajax_capture_client_error'));
+        add_action('wp_ajax_tracepilot_run_diagnostics', array($this, 'ajax_run_diagnostics'));
+        add_action('wp_ajax_tracepilot_enable_safe_mode', array($this, 'ajax_enable_safe_mode'));
+        add_action('wp_ajax_tracepilot_disable_safe_mode', array($this, 'ajax_disable_safe_mode'));
+        add_action('wp_ajax_tracepilot_ask_diagnostics_ai', array($this, 'ajax_ask_diagnostics_ai'));
+        add_action('wp_ajax_tracepilot_capture_client_error', array($this, 'ajax_capture_client_error'));
+        add_action('wp_ajax_nopriv_tracepilot_capture_client_error', array($this, 'ajax_capture_client_error'));
 
         add_filter('option_active_plugins', array($this, 'filter_active_plugins_for_safe_mode'));
         add_filter('site_option_active_sitewide_plugins', array($this, 'filter_network_active_plugins_for_safe_mode'));
@@ -38,8 +38,8 @@ class WPAL_Diagnostics {
      * AJAX scan runner.
      */
     public function ajax_run_diagnostics() {
-        check_ajax_referer('wpal_nonce', 'nonce');
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        check_ajax_referer('tracepilot_nonce', 'nonce');
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
@@ -51,8 +51,8 @@ class WPAL_Diagnostics {
      * AJAX safe mode enable.
      */
     public function ajax_enable_safe_mode() {
-        check_ajax_referer('wpal_nonce', 'nonce');
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        check_ajax_referer('tracepilot_nonce', 'nonce');
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
@@ -68,7 +68,7 @@ class WPAL_Diagnostics {
         setcookie(self::SAFE_MODE_COOKIE, $token, time() + self::SAFE_MODE_TTL, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true);
         $_COOKIE[self::SAFE_MODE_COOKIE] = $token;
 
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'safe_mode_enabled',
             __('Safe mode enabled for current admin session', 'wp-activity-logger-pro'),
             'warning',
@@ -82,8 +82,8 @@ class WPAL_Diagnostics {
      * AJAX safe mode disable.
      */
     public function ajax_disable_safe_mode() {
-        check_ajax_referer('wpal_nonce', 'nonce');
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        check_ajax_referer('tracepilot_nonce', 'nonce');
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
@@ -95,7 +95,7 @@ class WPAL_Diagnostics {
         setcookie(self::SAFE_MODE_COOKIE, '', time() - HOUR_IN_SECONDS, COOKIEPATH ? COOKIEPATH : '/', COOKIE_DOMAIN, is_ssl(), true);
         unset($_COOKIE[self::SAFE_MODE_COOKIE]);
 
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'safe_mode_disabled',
             __('Safe mode disabled for current admin session', 'wp-activity-logger-pro'),
             'info'
@@ -108,8 +108,8 @@ class WPAL_Diagnostics {
      * AJAX assistant answer.
      */
     public function ajax_ask_diagnostics_ai() {
-        check_ajax_referer('wpal_nonce', 'nonce');
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        check_ajax_referer('tracepilot_nonce', 'nonce');
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
@@ -154,7 +154,7 @@ class WPAL_Diagnostics {
      * Inject client-side error collector.
      */
     public function inject_client_error_snippet() {
-        if (is_admin() && !WPAL_Helpers::current_user_can_manage()) {
+        if (is_admin() && !TracePilot_Helpers::current_user_can_manage()) {
             return;
         }
         ?>
@@ -168,7 +168,7 @@ class WPAL_Diagnostics {
             function send(payload) {
                 try {
                     var data = new window.FormData();
-                    data.append('action', 'wpal_capture_client_error');
+                    data.append('action', 'tracepilot_capture_client_error');
                     data.append('page', window.location.href);
                     data.append('message', payload.message || '');
                     data.append('source', payload.source || '');
@@ -299,7 +299,7 @@ class WPAL_Diagnostics {
         }
 
         $theme = wp_get_theme();
-        WPAL_Helpers::init();
+        TracePilot_Helpers::init();
 
         return array(
             'wordpress_version' => $wp_version,
@@ -318,12 +318,12 @@ class WPAL_Diagnostics {
             ),
             'memory_limit' => ini_get('memory_limit'),
             'max_execution_time' => ini_get('max_execution_time'),
-            'table_ready' => $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', WPAL_Helpers::$db_table)) === WPAL_Helpers::$db_table,
-            'log_total' => $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', WPAL_Helpers::$db_table)) === WPAL_Helpers::$db_table
-                ? (int) $wpdb->get_var('SELECT COUNT(*) FROM ' . WPAL_Helpers::$db_table)
+            'table_ready' => $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', TracePilot_Helpers::$db_table)) === TracePilot_Helpers::$db_table,
+            'log_total' => $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', TracePilot_Helpers::$db_table)) === TracePilot_Helpers::$db_table
+                ? (int) $wpdb->get_var('SELECT COUNT(*) FROM ' . TracePilot_Helpers::$db_table)
                 : 0,
-            'log_columns' => $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', WPAL_Helpers::$db_table)) === WPAL_Helpers::$db_table
-                ? $wpdb->get_col('DESC ' . WPAL_Helpers::$db_table, 0)
+            'log_columns' => $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', TracePilot_Helpers::$db_table)) === TracePilot_Helpers::$db_table
+                ? $wpdb->get_col('DESC ' . TracePilot_Helpers::$db_table, 0)
                 : array(),
         );
     }
@@ -579,10 +579,10 @@ class WPAL_Diagnostics {
         global $wpdb;
         $issues = array();
 
-        WPAL_Helpers::init();
+        TracePilot_Helpers::init();
         $updates = $wpdb->get_results(
             "SELECT time, action, object_name
-            FROM " . WPAL_Helpers::$db_table . "
+            FROM " . TracePilot_Helpers::$db_table . "
             WHERE action IN ('plugin_activated','plugin_deactivated','plugin_updated','theme_switched','theme_updated','wordpress_updated','post_updated','vulnerability_detected')
             ORDER BY time DESC
             LIMIT 20"
@@ -593,7 +593,7 @@ class WPAL_Diagnostics {
             $issues[] = $this->make_issue(
                 'issue_timeline_context',
                 'info',
-                sprintf(__('Recent site change recorded: %1$s at %2$s.', 'wp-activity-logger-pro'), $latest->action, WPAL_Helpers::format_datetime($latest->time)),
+                sprintf(__('Recent site change recorded: %1$s at %2$s.', 'wp-activity-logger-pro'), $latest->action, TracePilot_Helpers::format_datetime($latest->time)),
                 __('Use the timeline below to compare new issues against recent plugin, theme, and content changes.', 'wp-activity-logger-pro'),
                 array(),
                 array('recent_changes' => $updates)
@@ -613,14 +613,14 @@ class WPAL_Diagnostics {
     private function build_change_correlations($issues, $timeline) {
         global $wpdb;
 
-        WPAL_Helpers::init();
-        if (!$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', WPAL_Helpers::$db_table))) {
+        TracePilot_Helpers::init();
+        if (!$wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', TracePilot_Helpers::$db_table))) {
             return array();
         }
 
         $recent_changes = $wpdb->get_results(
             "SELECT time, action, object_name, context
-            FROM " . WPAL_Helpers::$db_table . "
+            FROM " . TracePilot_Helpers::$db_table . "
             WHERE action IN ('plugin_updated','theme_updated','wordpress_updated','plugin_activated','plugin_deactivated','theme_switched','settings_updated')
             ORDER BY time DESC
             LIMIT 25"
@@ -848,7 +848,7 @@ class WPAL_Diagnostics {
      * @param array $report Report.
      */
     private function record_report_logs($report) {
-        WPAL_Helpers::log_activity(
+        TracePilot_Helpers::log_activity(
             'system_scan_completed',
             sprintf(__('System scan completed with health score %d.', 'wp-activity-logger-pro'), (int) $report['health_score']),
             $report['counts']['critical'] > 0 ? 'error' : ($report['counts']['warning'] > 0 ? 'warning' : 'info'),
@@ -856,7 +856,7 @@ class WPAL_Diagnostics {
         );
 
         foreach (array_slice($report['issues'], 0, 10) as $issue) {
-            WPAL_Helpers::log_activity(
+            TracePilot_Helpers::log_activity(
                 'system_issue_detected',
                 $issue['message'],
                 $this->map_issue_severity_to_log($issue['severity']),
@@ -879,7 +879,7 @@ class WPAL_Diagnostics {
      * @param array $report Report.
      */
     private function send_critical_alerts($report) {
-        if (empty($report['counts']['critical']) || empty(wp_activity_logger_pro()->notifications)) {
+        if (empty($report['counts']['critical']) || empty(tracepilot_for_wordpress()->notifications)) {
             return;
         }
 
@@ -894,7 +894,7 @@ class WPAL_Diagnostics {
             !empty($top[0]['message']) ? $top[0]['message'] : __('Unknown critical issue', 'wp-activity-logger-pro')
         );
 
-        wp_activity_logger_pro()->notifications->send_custom_notification(
+        tracepilot_for_wordpress()->notifications->send_custom_notification(
             'critical_site_issue',
             $message,
             'error',
@@ -1118,7 +1118,7 @@ class WPAL_Diagnostics {
                     __('The strongest timeline clue is that "%1$s" first appeared near the change "%2$s" around %3$s.', 'wp-activity-logger-pro'),
                     $correlation['issue'],
                     $correlation['change_label'],
-                    WPAL_Helpers::format_datetime($correlation['change_time'])
+                    TracePilot_Helpers::format_datetime($correlation['change_time'])
                 );
             }
         }
@@ -1194,7 +1194,7 @@ class WPAL_Diagnostics {
      * @return string
      */
     private function get_safe_mode_transient_key($token) {
-        return 'wpal_safe_mode_' . md5($token);
+        return 'tracepilot_safe_mode_' . md5($token);
     }
 
     /**
@@ -1355,7 +1355,7 @@ class WPAL_Diagnostics {
      * Render an admin notice for critical scan results.
      */
     public function render_admin_alert_notice() {
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             return;
         }
 

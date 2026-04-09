@@ -8,26 +8,26 @@ if (!defined('ABSPATH')) {
 }
 ?>
 
-<div class="wrap wpal-wrap">
-    <section class="wpal-hero wpal-hero-compact">
+<div class="wrap tracepilot-wrap">
+    <section class="tracepilot-hero tracepilot-hero-compact">
         <div>
-            <p class="wpal-eyebrow"><?php esc_html_e('Insights', 'wp-activity-logger-pro'); ?></p>
-            <h1 class="wpal-page-title"><?php esc_html_e('Analytics', 'wp-activity-logger-pro'); ?></h1>
-            <p class="wpal-hero-copy"><?php esc_html_e('Compare activity volume, user behavior, action mix, and severity distribution over time.', 'wp-activity-logger-pro'); ?></p>
+            <p class="tracepilot-eyebrow"><?php esc_html_e('Insights', 'wp-activity-logger-pro'); ?></p>
+            <h1 class="tracepilot-page-title"><?php esc_html_e('Analytics', 'wp-activity-logger-pro'); ?></h1>
+            <p class="tracepilot-hero-copy"><?php esc_html_e('Compare activity volume, user behavior, action mix, and severity distribution over time.', 'wp-activity-logger-pro'); ?></p>
         </div>
     </section>
 
-    <section class="wpal-panel">
-        <div class="wpal-panel-head">
+    <section class="tracepilot-panel">
+        <div class="tracepilot-panel-head">
             <div>
                 <h2><?php esc_html_e('Build a chart', 'wp-activity-logger-pro'); ?></h2>
                 <p><?php esc_html_e('Choose a view and generate a fresh dataset from the current logs table.', 'wp-activity-logger-pro'); ?></p>
             </div>
         </div>
-        <form id="wpal-analytics-form" class="wpal-filter-grid">
+        <form id="tracepilot-analytics-form" class="tracepilot-filter-grid">
             <label>
                 <span><?php esc_html_e('Chart type', 'wp-activity-logger-pro'); ?></span>
-                <select id="wpal-chart-type" class="wpal-input">
+                <select id="tracepilot-chart-type" class="tracepilot-input">
                     <option value="activity_over_time"><?php esc_html_e('Activity over time', 'wp-activity-logger-pro'); ?></option>
                     <option value="activity_by_user"><?php esc_html_e('Activity by user', 'wp-activity-logger-pro'); ?></option>
                     <option value="activity_by_type"><?php esc_html_e('Activity by type', 'wp-activity-logger-pro'); ?></option>
@@ -36,38 +36,38 @@ if (!defined('ABSPATH')) {
             </label>
             <label>
                 <span><?php esc_html_e('Date range', 'wp-activity-logger-pro'); ?></span>
-                <select id="wpal-date-range" class="wpal-input">
+                <select id="tracepilot-date-range" class="tracepilot-input">
                     <option value="7d"><?php esc_html_e('Last 7 days', 'wp-activity-logger-pro'); ?></option>
                     <option value="30d" selected><?php esc_html_e('Last 30 days', 'wp-activity-logger-pro'); ?></option>
                     <option value="90d"><?php esc_html_e('Last 90 days', 'wp-activity-logger-pro'); ?></option>
                     <option value="1y"><?php esc_html_e('Last year', 'wp-activity-logger-pro'); ?></option>
                 </select>
             </label>
-            <label id="wpal-group-by-wrap">
+            <label id="tracepilot-group-by-wrap">
                 <span><?php esc_html_e('Group by', 'wp-activity-logger-pro'); ?></span>
-                <select id="wpal-group-by" class="wpal-input">
+                <select id="tracepilot-group-by" class="tracepilot-input">
                     <option value="day" selected><?php esc_html_e('Day', 'wp-activity-logger-pro'); ?></option>
                     <option value="week"><?php esc_html_e('Week', 'wp-activity-logger-pro'); ?></option>
                     <option value="month"><?php esc_html_e('Month', 'wp-activity-logger-pro'); ?></option>
                 </select>
             </label>
-            <div class="wpal-filter-actions">
-                <button type="submit" class="wpal-btn wpal-btn-primary"><?php esc_html_e('Generate', 'wp-activity-logger-pro'); ?></button>
+            <div class="tracepilot-filter-actions">
+                <button type="submit" class="tracepilot-btn tracepilot-btn-primary"><?php esc_html_e('Generate', 'wp-activity-logger-pro'); ?></button>
             </div>
         </form>
     </section>
 
-    <section class="wpal-panel">
-        <div class="wpal-panel-head">
+    <section class="tracepilot-panel">
+        <div class="tracepilot-panel-head">
             <div>
-                <h2 id="wpal-analytics-title"><?php esc_html_e('Activity over time', 'wp-activity-logger-pro'); ?></h2>
+                <h2 id="tracepilot-analytics-title"><?php esc_html_e('Activity over time', 'wp-activity-logger-pro'); ?></h2>
                 <p><?php esc_html_e('Charts update live from current plugin data.', 'wp-activity-logger-pro'); ?></p>
             </div>
         </div>
-        <div class="wpal-chart-shell">
-            <canvas id="wpal-analytics-chart"></canvas>
+        <div class="tracepilot-chart-shell">
+            <canvas id="tracepilot-analytics-chart"></canvas>
         </div>
-        <div id="wpal-analytics-insights" class="wpal-list" style="margin-top:16px;"></div>
+        <div id="tracepilot-analytics-insights" class="tracepilot-list" style="margin-top:16px;"></div>
     </section>
 </div>
 
@@ -76,7 +76,7 @@ jQuery(function($) {
     let chart;
 
     function renderAnalytics(config, title, insights) {
-        const canvas = document.getElementById('wpal-analytics-chart');
+        const canvas = document.getElementById('tracepilot-analytics-chart');
         if (!canvas || typeof Chart === 'undefined') {
             return;
         }
@@ -86,24 +86,24 @@ jQuery(function($) {
         }
 
         chart = new Chart(canvas, config);
-        $('#wpal-analytics-title').text(title);
+        $('#tracepilot-analytics-title').text(title);
 
-        const box = $('#wpal-analytics-insights').empty();
+        const box = $('#tracepilot-analytics-insights').empty();
         if (Array.isArray(insights) && insights.length) {
             insights.forEach(function(line) {
-                box.append('<div class="wpal-list-row"><div>' + $('<div>').text(line).html() + '</div></div>');
+                box.append('<div class="tracepilot-list-row"><div>' + $('<div>').text(line).html() + '</div></div>');
             });
         }
     }
 
     function loadAnalytics() {
-        const chartType = $('#wpal-chart-type').val();
-        const dateRange = $('#wpal-date-range').val();
-        const groupBy = $('#wpal-group-by').val();
+        const chartType = $('#tracepilot-chart-type').val();
+        const dateRange = $('#tracepilot-date-range').val();
+        const groupBy = $('#tracepilot-group-by').val();
 
         $.post(ajaxurl, {
-            action: 'wpal_get_analytics_data',
-            nonce: '<?php echo esc_js(wp_create_nonce('wpal_nonce')); ?>',
+            action: 'tracepilot_get_analytics_data',
+            nonce: '<?php echo esc_js(wp_create_nonce('tracepilot_nonce')); ?>',
             chart_type: chartType,
             date_range: dateRange,
             group_by: groupBy
@@ -141,17 +141,17 @@ jQuery(function($) {
                     data: response.data,
                     options: options
                 },
-                $('#wpal-chart-type option:selected').text(),
+                $('#tracepilot-chart-type option:selected').text(),
                 response.data.insights || []
             );
         });
     }
 
-    $('#wpal-chart-type').on('change', function() {
-        $('#wpal-group-by-wrap').toggle($(this).val() === 'activity_over_time');
+    $('#tracepilot-chart-type').on('change', function() {
+        $('#tracepilot-group-by-wrap').toggle($(this).val() === 'activity_over_time');
     });
 
-    $('#wpal-analytics-form').on('submit', function(event) {
+    $('#tracepilot-analytics-form').on('submit', function(event) {
         event.preventDefault();
         loadAnalytics();
     });

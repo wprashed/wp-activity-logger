@@ -1,39 +1,39 @@
 <?php
 /**
- * File integrity monitoring for WP Activity Logger Pro.
+ * File integrity monitoring for TracePilot for WordPress.
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class WPAL_File_Integrity {
+class TracePilot_File_Integrity {
     /**
      * Option key for baseline.
      */
-    const OPTION_KEY = 'wpal_file_integrity_baseline';
+    const OPTION_KEY = 'tracepilot_file_integrity_baseline';
 
     /**
      * Constructor.
      */
     public function __construct() {
-        add_action('wp_ajax_wpal_build_file_baseline', array($this, 'ajax_build_baseline'));
-        add_action('wp_ajax_wpal_scan_file_integrity', array($this, 'ajax_scan_integrity'));
-        add_action('wpal_daily_cron', array($this, 'scheduled_scan'));
+        add_action('wp_ajax_tracepilot_build_file_baseline', array($this, 'ajax_build_baseline'));
+        add_action('wp_ajax_tracepilot_scan_file_integrity', array($this, 'ajax_scan_integrity'));
+        add_action('tracepilot_daily_cron', array($this, 'scheduled_scan'));
     }
 
     /**
      * AJAX build baseline.
      */
     public function ajax_build_baseline() {
-        check_ajax_referer('wpal_nonce', 'nonce');
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        check_ajax_referer('tracepilot_nonce', 'nonce');
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('Permission denied.', 'wp-activity-logger-pro')));
         }
 
         $baseline = $this->build_baseline();
         update_option(self::OPTION_KEY, $baseline, false);
-        WPAL_Helpers::log_activity('file_integrity_baseline_built', __('File integrity baseline created', 'wp-activity-logger-pro'), 'info');
+        TracePilot_Helpers::log_activity('file_integrity_baseline_built', __('File integrity baseline created', 'wp-activity-logger-pro'), 'info');
 
         wp_send_json_success(array('message' => __('Baseline created successfully.', 'wp-activity-logger-pro'), 'count' => count($baseline['files'])));
     }
@@ -42,8 +42,8 @@ class WPAL_File_Integrity {
      * AJAX scan.
      */
     public function ajax_scan_integrity() {
-        check_ajax_referer('wpal_nonce', 'nonce');
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        check_ajax_referer('tracepilot_nonce', 'nonce');
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('Permission denied.', 'wp-activity-logger-pro')));
         }
 
@@ -55,7 +55,7 @@ class WPAL_File_Integrity {
      * Scheduled scan.
      */
     public function scheduled_scan() {
-        $settings = WPAL_Helpers::get_settings();
+        $settings = TracePilot_Helpers::get_settings();
         if (empty($settings['monitor_file_integrity'])) {
             return;
         }
@@ -119,7 +119,7 @@ class WPAL_File_Integrity {
 
         if ($log_results && !empty($changes)) {
             foreach ($changes as $change) {
-                WPAL_Helpers::log_activity(
+                TracePilot_Helpers::log_activity(
                     'file_integrity_' . $change['type'],
                     sprintf(__('File integrity alert: %s file %s', 'wp-activity-logger-pro'), $change['type'], $change['path']),
                     'error',

@@ -6,28 +6,28 @@
 
     function request(data) {
         return $.ajax({
-            url: wpal_admin_vars.ajax_url,
+            url: tracepilot_admin_vars.ajax_url,
             type: 'POST',
-            data: Object.assign({ nonce: wpal_admin_vars.nonce }, data)
+            data: Object.assign({ nonce: tracepilot_admin_vars.nonce }, data)
         });
     }
 
     function modal() {
-        return $('#wpal-log-details-modal');
+        return $('#tracepilot-log-details-modal');
     }
 
     function removeLogItem(button) {
         const row = button.closest('tr');
         if (row.length) {
-            if ($.fn.dataTable && $.fn.dataTable.isDataTable('#wpal-logs-table')) {
-                $('#wpal-logs-table').DataTable().row(row).remove().draw();
+            if ($.fn.dataTable && $.fn.dataTable.isDataTable('#tracepilot-logs-table')) {
+                $('#tracepilot-logs-table').DataTable().row(row).remove().draw();
             } else {
                 row.remove();
             }
             return;
         }
 
-        const card = button.closest('.wpal-stream-card');
+        const card = button.closest('.tracepilot-stream-card');
         if (card.length) {
             card.fadeOut(180, function() {
                 $(this).remove();
@@ -35,7 +35,7 @@
         }
     }
 
-    window.wpalRenderLineChart = function(canvasId, labels, values) {
+    window.tracepilotRenderLineChart = function(canvasId, labels, values) {
         const canvas = document.getElementById(canvasId);
         if (!canvas || typeof Chart === 'undefined') {
             return;
@@ -67,7 +67,7 @@
         });
     };
 
-    window.wpalRenderDoughnutChart = function(canvasId, labels, values) {
+    window.tracepilotRenderDoughnutChart = function(canvasId, labels, values) {
         const canvas = document.getElementById(canvasId);
         if (!canvas || typeof Chart === 'undefined') {
             return;
@@ -91,18 +91,18 @@
     };
 
     function initPageCharts() {
-        if (window.wpalDashboardTrend) {
-            window.wpalRenderLineChart('wpal-dashboard-trend', window.wpalDashboardTrend.labels, window.wpalDashboardTrend.values);
+        if (window.tracepilotDashboardTrend) {
+            window.tracepilotRenderLineChart('tracepilot-dashboard-trend', window.tracepilotDashboardTrend.labels, window.tracepilotDashboardTrend.values);
         }
 
-        if (window.wpalLogsSeverity) {
-            window.wpalRenderDoughnutChart('wpal-logs-severity', window.wpalLogsSeverity.labels, window.wpalLogsSeverity.values);
+        if (window.tracepilotLogsSeverity) {
+            window.tracepilotRenderDoughnutChart('tracepilot-logs-severity', window.tracepilotLogsSeverity.labels, window.tracepilotLogsSeverity.values);
         }
     }
 
     function initTables() {
-        if ($.fn.dataTable && $('#wpal-logs-table.wpal-data-table').length && !$.fn.dataTable.isDataTable('#wpal-logs-table')) {
-            $('#wpal-logs-table').DataTable({
+        if ($.fn.dataTable && $('#tracepilot-logs-table.tracepilot-data-table').length && !$.fn.dataTable.isDataTable('#tracepilot-logs-table')) {
+            $('#tracepilot-logs-table').DataTable({
                 pageLength: 25,
                 order: [[0, 'desc']]
             });
@@ -111,7 +111,7 @@
 
     function initDatepickers() {
         if ($.fn.datepicker) {
-            $('.wpal-datepicker').datepicker({
+            $('.tracepilot-datepicker').datepicker({
                 dateFormat: 'yy-mm-dd',
                 maxDate: 0
             });
@@ -119,14 +119,14 @@
     }
 
     function initNoticeTray() {
-        const wrap = $('.wpal-wrap').first();
+        const wrap = $('.tracepilot-wrap').first();
         if (!wrap.length) {
             return;
         }
 
-        let tray = $('.wpal-notice-stack').first();
+        let tray = $('.tracepilot-notice-stack').first();
         if (!tray.length) {
-            tray = $('<div class="wpal-notice-stack" />');
+            tray = $('<div class="tracepilot-notice-stack" />');
             wrap.before(tray);
         }
 
@@ -135,16 +135,16 @@
             '#wpbody-content > .error',
             '#wpbody-content > .updated',
             '#wpbody-content > .update-nag',
-            '.wpal-wrap .notice',
-            '.wpal-wrap .error',
-            '.wpal-wrap .updated',
-            '.wpal-wrap .update-nag'
+            '.tracepilot-wrap .notice',
+            '.tracepilot-wrap .error',
+            '.tracepilot-wrap .updated',
+            '.tracepilot-wrap .update-nag'
         ];
 
         const seen = new window.Set();
         $(selectors.join(',')).each(function() {
             const notice = $(this);
-            if (!notice.length || notice.closest('.wpal-notice-stack').length) {
+            if (!notice.length || notice.closest('.tracepilot-notice-stack').length) {
                 return;
             }
 
@@ -159,7 +159,7 @@
             }
 
             seen.add(key);
-            notice.addClass('wpal-notice-card');
+            notice.addClass('tracepilot-notice-card');
             tray.append(notice);
         });
 
@@ -169,10 +169,10 @@
     }
 
     function initTabs() {
-        $('[data-wpal-tabs]').each(function() {
-            const root = $(this).closest('.wpal-panel');
-            const buttons = $(this).find('.wpal-panel-tab');
-            const panels = root.find('.wpal-tab-panel');
+        $('[data-tracepilot-tabs]').each(function() {
+            const root = $(this).closest('.tracepilot-panel');
+            const buttons = $(this).find('.tracepilot-panel-tab');
+            const panels = root.find('.tracepilot-tab-panel');
 
             function activateTab(target) {
                 buttons.removeClass('is-active');
@@ -193,35 +193,35 @@
         });
     }
 
-    $(document).on('click', '.wpal-view-log', function() {
+    $(document).on('click', '.tracepilot-view-log', function() {
         request({
-            action: 'wpal_get_log_details',
+            action: 'tracepilot_get_log_details',
             log_id: $(this).data('log-id'),
             site_id: $(this).data('site-id') || 0
         }).done(function(html) {
-            modal().find('.wpal-modal-body').html(html);
+            modal().find('.tracepilot-modal-body').html(html);
             modal().addClass('is-open');
         });
     });
 
-    $(document).on('click', '.wpal-modal-close', function() {
+    $(document).on('click', '.tracepilot-modal-close', function() {
         modal().removeClass('is-open');
     });
 
-    $(document).on('click', '.wpal-modal', function(event) {
-        if ($(event.target).is('.wpal-modal')) {
+    $(document).on('click', '.tracepilot-modal', function(event) {
+        if ($(event.target).is('.tracepilot-modal')) {
             modal().removeClass('is-open');
         }
     });
 
-    $(document).on('click', '.wpal-delete-log', function() {
+    $(document).on('click', '.tracepilot-delete-log', function() {
         const button = $(this);
-        if (!window.confirm(wpal_admin_vars.confirm_delete)) {
+        if (!window.confirm(tracepilot_admin_vars.confirm_delete)) {
             return;
         }
 
         request({
-            action: 'wpal_delete_log',
+            action: 'tracepilot_delete_log',
             log_id: button.data('log-id'),
             site_id: button.data('site-id') || 0
         }).done(function(response) {
@@ -233,22 +233,22 @@
         });
     });
 
-    $('#wpal-delete-all-logs').on('click', function() {
-        if (!window.confirm(wpal_admin_vars.confirm_delete_all)) {
+    $('#tracepilot-delete-all-logs').on('click', function() {
+        if (!window.confirm(tracepilot_admin_vars.confirm_delete_all)) {
             return;
         }
 
-        request({ action: 'wpal_delete_all_logs' }).done(function(response) {
+        request({ action: 'tracepilot_delete_all_logs' }).done(function(response) {
             if (response.success) {
                 window.location.reload();
             }
         });
     });
 
-    $(document).on('click', '.wpal-archive-log', function() {
+    $(document).on('click', '.tracepilot-archive-log', function() {
         const button = $(this);
         request({
-            action: 'wpal_archive_log',
+            action: 'tracepilot_archive_log',
             log_id: button.data('log-id'),
             site_id: button.data('site-id') || 0
         }).done(function(response) {
@@ -260,10 +260,10 @@
         });
     });
 
-    $(document).on('click', '.wpal-restore-log', function() {
+    $(document).on('click', '.tracepilot-restore-log', function() {
         const button = $(this);
         request({
-            action: 'wpal_restore_log',
+            action: 'tracepilot_restore_log',
             log_id: button.data('log-id')
         }).done(function(response) {
             if (response.success) {
@@ -276,10 +276,10 @@
         });
     });
 
-    $(document).on('click', '.wpal-delete-archived-log', function() {
+    $(document).on('click', '.tracepilot-delete-archived-log', function() {
         const button = $(this);
         request({
-            action: 'wpal_delete_archived_log',
+            action: 'tracepilot_delete_archived_log',
             log_id: button.data('log-id')
         }).done(function(response) {
             if (response.success) {
@@ -292,48 +292,48 @@
         });
     });
 
-    $(document).on('click', '.wpal-block-ip', function() {
+    $(document).on('click', '.tracepilot-block-ip', function() {
         const ip = $(this).data('ip');
         if (!ip) {
             return;
         }
-        request({ action: 'wpal_block_ip', ip: ip }).done(function(response) {
+        request({ action: 'tracepilot_block_ip', ip: ip }).done(function(response) {
             if (response.success) {
                 window.alert(response.data.message);
             }
         });
     });
 
-    $(document).on('click', '.wpal-force-logout', function() {
+    $(document).on('click', '.tracepilot-force-logout', function() {
         const userId = $(this).data('user-id');
         if (!userId) {
             return;
         }
-        request({ action: 'wpal_force_logout_user', user_id: userId }).done(function(response) {
+        request({ action: 'tracepilot_force_logout_user', user_id: userId }).done(function(response) {
             if (response.success) {
                 window.alert(response.data.message);
             }
         });
     });
 
-    $(document).on('click', '.wpal-reset-password', function() {
+    $(document).on('click', '.tracepilot-reset-password', function() {
         const userId = $(this).data('user-id');
         if (!userId) {
             return;
         }
-        request({ action: 'wpal_reset_user_password', user_id: userId }).done(function(response) {
+        request({ action: 'tracepilot_reset_user_password', user_id: userId }).done(function(response) {
             if (response.success) {
                 window.alert(response.data.message);
             }
         });
     });
 
-    $(document).on('click', '.wpal-delete-user-logs', function() {
+    $(document).on('click', '.tracepilot-delete-user-logs', function() {
         const userId = $(this).data('user-id');
         if (!userId || !window.confirm('Delete all logs for this user?')) {
             return;
         }
-        request({ action: 'wpal_delete_user_logs', user_id: userId }).done(function(response) {
+        request({ action: 'tracepilot_delete_user_logs', user_id: userId }).done(function(response) {
             if (response.success) {
                 window.alert(response.data.message);
                 window.location.reload();
@@ -374,13 +374,13 @@
         return data;
     }
 
-    $('#wpal-settings-form').on('submit', function(event) {
+    $('#tracepilot-settings-form').on('submit', function(event) {
         event.preventDefault();
-        const feedback = $('#wpal-settings-feedback');
+        const feedback = $('#tracepilot-settings-feedback');
         feedback.text('Saving...');
 
         request({
-            action: 'wpal_save_settings',
+            action: 'tracepilot_save_settings',
             replace_mode: 1,
             wpal_options: collectOptions(this)
         }).done(function(response) {
@@ -388,52 +388,52 @@
         });
     });
 
-    $('#wpal-reset-settings').on('click', function() {
-        if (!window.confirm(wpal_admin_vars.confirm_reset_settings)) {
+    $('#tracepilot-reset-settings').on('click', function() {
+        if (!window.confirm(tracepilot_admin_vars.confirm_reset_settings)) {
             return;
         }
 
-        request({ action: 'wpal_reset_settings' }).done(function(response) {
+        request({ action: 'tracepilot_reset_settings' }).done(function(response) {
             if (response.success) {
                 window.location.reload();
             }
         });
     });
 
-    $(document).on('click', '.wpal-export-user-logs-trigger', function() {
-        const userId = $(this).closest('.wpal-inline-actions').find('.wpal-privacy-user-id-input').val();
+    $(document).on('click', '.tracepilot-export-user-logs-trigger', function() {
+        const userId = $(this).closest('.tracepilot-inline-actions').find('.tracepilot-privacy-user-id-input').val();
         if (!userId) {
-            window.alert(wpal_admin_vars.enter_user_id);
+            window.alert(tracepilot_admin_vars.enter_user_id);
             return;
         }
-        const url = `${wpal_admin_vars.ajax_url}?action=wpal_export_user_logs&nonce=${encodeURIComponent(wpal_admin_vars.nonce)}&user_id=${encodeURIComponent(userId)}`;
+        const url = `${tracepilot_admin_vars.ajax_url}?action=tracepilot_export_user_logs&nonce=${encodeURIComponent(tracepilot_admin_vars.nonce)}&user_id=${encodeURIComponent(userId)}`;
         window.location.href = url;
     });
 
-    $(document).on('click', '.wpal-delete-user-logs-trigger', function() {
-        const userId = $(this).closest('.wpal-inline-actions').find('.wpal-privacy-user-id-input').val();
-        if (!userId || !window.confirm(wpal_admin_vars.confirm_delete_user_logs)) {
+    $(document).on('click', '.tracepilot-delete-user-logs-trigger', function() {
+        const userId = $(this).closest('.tracepilot-inline-actions').find('.tracepilot-privacy-user-id-input').val();
+        if (!userId || !window.confirm(tracepilot_admin_vars.confirm_delete_user_logs)) {
             return;
         }
-        request({ action: 'wpal_delete_user_logs', user_id: userId }).done(function(response) {
+        request({ action: 'tracepilot_delete_user_logs', user_id: userId }).done(function(response) {
             if (response.success) {
                 window.alert(response.data.message);
             }
         });
     });
 
-    $('#wpal-run-diagnostics').on('click', function() {
+    $('#tracepilot-run-diagnostics').on('click', function() {
         const button = $(this);
         const originalText = button.text();
-        button.prop('disabled', true).text(wpal_admin_vars.running_scan);
+        button.prop('disabled', true).text(tracepilot_admin_vars.running_scan);
 
-        request({ action: 'wpal_run_diagnostics' }).done(function(response) {
+        request({ action: 'tracepilot_run_diagnostics' }).done(function(response) {
             if (response.success) {
                 window.location.reload();
                 return;
             }
 
-            window.alert(response.data && response.data.message ? response.data.message : wpal_admin_vars.scan_failed);
+            window.alert(response.data && response.data.message ? response.data.message : tracepilot_admin_vars.scan_failed);
             button.prop('disabled', false).text(originalText);
         }).fail(function() {
             window.alert('Unable to run the diagnostics scan.');
@@ -442,11 +442,11 @@
     });
 
     function getSafeModeSelection() {
-        return ($('#wpal-safe-mode-plugins').val() || []).filter(Boolean);
+        return ($('#tracepilot-safe-mode-plugins').val() || []).filter(Boolean);
     }
 
     function setSafeModeSelection(plugins) {
-        $('#wpal-safe-mode-plugins').val((plugins || []).filter(Boolean)).trigger('change');
+        $('#tracepilot-safe-mode-plugins').val((plugins || []).filter(Boolean)).trigger('change');
     }
 
     function enableSafeMode(trigger) {
@@ -455,7 +455,7 @@
         button.prop('disabled', true).text('Enabling...');
 
         request({
-            action: 'wpal_enable_safe_mode',
+            action: 'tracepilot_enable_safe_mode',
             plugins: getSafeModeSelection()
         }).done(function(response) {
             if (response.success) {
@@ -476,7 +476,7 @@
         const originalText = button.text();
         button.prop('disabled', true).text('Disabling...');
 
-        request({ action: 'wpal_disable_safe_mode' }).done(function(response) {
+        request({ action: 'tracepilot_disable_safe_mode' }).done(function(response) {
             if (response.success) {
                 window.location.reload();
                 return;
@@ -490,11 +490,11 @@
         });
     }
 
-    $('#wpal-enable-safe-mode, #wpal-enable-safe-mode-inline').on('click', function() {
+    $('#tracepilot-enable-safe-mode, #tracepilot-enable-safe-mode-inline').on('click', function() {
         enableSafeMode(this);
     });
 
-    $(document).on('click', '.wpal-safe-mode-preset', function() {
+    $(document).on('click', '.tracepilot-safe-mode-preset', function() {
         let plugins = [];
         try {
             plugins = JSON.parse($(this).attr('data-plugins') || '[]');
@@ -506,13 +506,13 @@
         enableSafeMode(this);
     });
 
-    $('#wpal-disable-safe-mode, #wpal-disable-safe-mode-inline').on('click', function() {
+    $('#tracepilot-disable-safe-mode, #tracepilot-disable-safe-mode-inline').on('click', function() {
         disableSafeMode(this);
     });
 
-    $('#wpal-ask-diagnostics-ai').on('click', function() {
-        const question = $('#wpal-diagnostics-question').val().trim();
-        const answerBox = $('#wpal-diagnostics-answer');
+    $('#tracepilot-ask-diagnostics-ai').on('click', function() {
+        const question = $('#tracepilot-diagnostics-question').val().trim();
+        const answerBox = $('#tracepilot-diagnostics-answer');
         const button = $(this);
 
         if (!question) {
@@ -525,7 +525,7 @@
         answerBox.text('Checking the latest scan context...');
 
         request({
-            action: 'wpal_ask_diagnostics_ai',
+            action: 'tracepilot_ask_diagnostics_ai',
             question: question
         }).done(function(response) {
             if (response.success && response.data && response.data.answer) {

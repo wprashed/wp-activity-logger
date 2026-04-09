@@ -1,14 +1,14 @@
-# WP Activity Logger Pro - Frequently Asked Questions
+# TracePilot for WordPress - Frequently Asked Questions
 
 ## General Questions
 
-### What is WP Activity Logger Pro?
+### What is TracePilot for WordPress?
 
-WP Activity Logger Pro is a comprehensive activity tracking solution for WordPress. It logs user and system activities, providing detailed reports, real-time notifications, and advanced filtering capabilities.
+TracePilot for WordPress is a comprehensive activity tracking solution for WordPress. It logs user and system activities, providing detailed reports, real-time notifications, and advanced filtering capabilities.
 
 ### How is this different from other logging plugins?
 
-WP Activity Logger Pro offers several advantages:
+TracePilot for WordPress offers several advantages:
 - More comprehensive event tracking
 - Real-time notifications
 - Advanced export options
@@ -83,7 +83,7 @@ Yes, you can configure email notifications for specific events. For example, you
 
 ### Is this plugin compatible with multisite?
 
-Yes, WP Activity Logger Pro is fully compatible with WordPress multisite installations. It can track activities across all sites in your network.
+Yes, TracePilot for WordPress is fully compatible with WordPress multisite installations. It can track activities across all sites in your network.
 
 ### Does it work with page builders?
 
@@ -232,7 +232,7 @@ Visit our website for links to all these resources.
 
 ### How can I get the most out of this plugin?
 
-To maximize the value of WP Activity Logger Pro:
+To maximize the value of TracePilot for WordPress:
 1. Configure it to track the events most relevant to your site
 2. Set up notifications for critical security events
 3. Review logs regularly to understand normal patterns

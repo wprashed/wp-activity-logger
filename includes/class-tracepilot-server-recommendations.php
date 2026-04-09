@@ -11,12 +11,12 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Server_Recommendations {
+class TracePilot_Server_Recommendations {
     /**
      * Constructor
      */
     public function __construct() {
-        add_action('wp_ajax_wpal_analyze_server_needs', array($this, 'ajax_analyze_server_needs'));
+        add_action('wp_ajax_tracepilot_analyze_server_needs', array($this, 'ajax_analyze_server_needs'));
     }
 
     /**
@@ -27,7 +27,7 @@ class WPAL_Server_Recommendations {
             'wp-activity-logger-pro',
             __('Server Recommendations', 'wp-activity-logger-pro'),
             __('Server Recommendations', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-server-recommendations',
             array($this, 'render_page')
         );
@@ -37,7 +37,7 @@ class WPAL_Server_Recommendations {
      * Render page
      */
     public function render_page() {
-        include WPAL_PLUGIN_DIR . 'templates/server-recommendations.php';
+        include TracePilot_PLUGIN_DIR . 'templates/server-recommendations.php';
     }
 
     /**
@@ -45,12 +45,12 @@ class WPAL_Server_Recommendations {
      */
     public function ajax_analyze_server_needs() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
 
@@ -65,8 +65,8 @@ class WPAL_Server_Recommendations {
      */
     public function analyze_server_needs() {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Get total logs count
         $total_logs = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");

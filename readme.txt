@@ -1,10 +1,10 @@
-=== WP Activity Logger Pro ===
+=== TracePilot for WordPress ===
 Contributors: wprashed
 Tags: activity log, audit log, security, diagnostics, monitoring, logging
 Requires at least: 6.0
 Tested up to: 6.9.4
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Track WordPress activity, investigate conflicts, review security signals, and ex
 
 == Description ==
 
-WP Activity Logger Pro helps site owners, agencies, and administrators understand what is happening inside WordPress.
+TracePilot for WordPress helps site owners, agencies, and administrators understand what is happening inside WordPress.
 
 The plugin records user and system activity, highlights suspicious patterns, offers diagnostics for common site issues, and provides a clear export workflow for compliance or troubleshooting.
 
@@ -31,7 +31,7 @@ The plugin records user and system activity, highlights suspicious patterns, off
 
 = Built for administrators =
 
-WP Activity Logger Pro is designed for:
+TracePilot for WordPress is designed for:
 
 * site owners who need an audit trail
 * agencies managing client sites
@@ -47,7 +47,7 @@ The plugin follows WordPress patterns for escaping, sanitization, AJAX nonce che
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install it from the WordPress admin plugins screen.
 2. Activate the plugin through the `Plugins` screen in WordPress.
-3. Open `Activity Logger` in the admin menu.
+3. Open `TracePilot` in the admin menu.
 4. Review the `Settings`, `Diagnostics`, and `Threat Detection` pages to configure the plugin for your workflow.
 
 == Frequently Asked Questions ==
@@ -87,6 +87,11 @@ It includes configuration for software vulnerability intelligence sources and co
 
 == Changelog ==
 
+= 1.3.1 =
+* Rebranded plugin identity to TracePilot for WordPress in plugin metadata, docs, and admin menu labels.
+* Updated admin menu icon to a security-focused shield icon.
+* Refined naming language in key settings and export messages.
+
 = 1.3.0 =
 * Added WordPress.org-ready readme content and full repository documentation.
 * Improved standards coverage for sanitization, escaping, and translatable strings in key admin flows.
@@ -103,6 +108,5 @@ It includes configuration for software vulnerability intelligence sources and co
 
 == Upgrade Notice ==
 
-= 1.3.0 =
-This release improves documentation and hardens several admin handlers for better WordPress standards compliance.
-
+= 1.3.1 =
+This release introduces TracePilot branding updates and admin menu polish.

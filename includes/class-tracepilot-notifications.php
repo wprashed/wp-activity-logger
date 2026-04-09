@@ -1,20 +1,20 @@
 <?php
 /**
- * Notifications class for WP Activity Logger Pro.
+ * Notifications class for TracePilot for WordPress.
  */
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class WPAL_Notifications {
+class TracePilot_Notifications {
     /**
      * Constructor.
      */
     public function __construct() {
-        add_action('wpal_after_log_activity', array($this, 'maybe_send_notifications'), 20, 5);
-        add_action('wpal_daily_cron', array($this, 'send_daily_summary'));
-        add_action('wpal_weekly_cron', array($this, 'send_weekly_summary'));
+        add_action('tracepilot_after_log_activity', array($this, 'maybe_send_notifications'), 20, 5);
+        add_action('tracepilot_daily_cron', array($this, 'send_daily_summary'));
+        add_action('tracepilot_weekly_cron', array($this, 'send_weekly_summary'));
     }
 
     /**
@@ -27,7 +27,7 @@ class WPAL_Notifications {
      * @param array  $context Context.
      */
     public function maybe_send_notifications($log_id, $action, $message, $severity, $context) {
-        $settings = WPAL_Helpers::get_settings();
+        $settings = TracePilot_Helpers::get_settings();
         if (empty($settings['enable_notifications'])) {
             return;
         }
@@ -52,7 +52,7 @@ class WPAL_Notifications {
      * @param array  $context Context.
      */
     public function send_custom_notification($action, $message, $severity = 'warning', $context = array()) {
-        $settings = WPAL_Helpers::get_settings();
+        $settings = TracePilot_Helpers::get_settings();
         if (empty($settings['enable_notifications']) && empty($settings['enable_threat_notifications'])) {
             return;
         }
@@ -225,14 +225,14 @@ class WPAL_Notifications {
      * Send scheduled summary.
      */
     public function send_daily_summary() {
-        $settings = WPAL_Helpers::get_settings();
+        $settings = TracePilot_Helpers::get_settings();
         if (empty($settings['daily_summary_enabled']) || empty($settings['daily_summary_email'])) {
             return;
         }
 
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
 
         $rows = $wpdb->get_results(
             "SELECT severity, COUNT(*) AS total
@@ -282,14 +282,14 @@ class WPAL_Notifications {
      * Send weekly summary.
      */
     public function send_weekly_summary() {
-        $settings = WPAL_Helpers::get_settings();
+        $settings = TracePilot_Helpers::get_settings();
         if (empty($settings['weekly_summary_enabled']) || empty($settings['weekly_summary_email'])) {
             return;
         }
 
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
 
         $sections = array(
             'failed_logins' => "SELECT COUNT(*) FROM $table_name WHERE action = 'login_failed' AND time >= DATE_SUB(NOW(), INTERVAL 7 DAY)",

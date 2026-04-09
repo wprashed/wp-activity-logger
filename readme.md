@@ -1,8 +1,8 @@
-# WP Activity Logger Pro
+# TracePilot for WordPress
 
-WP Activity Logger Pro is a modern WordPress activity log, diagnostics, and threat-review plugin built for administrators who need visibility, traceability, and safer debugging tools inside wp-admin.
+TracePilot for WordPress is a modern WordPress activity log, diagnostics, and threat-review plugin built for administrators who need visibility, traceability, and safer debugging tools inside wp-admin.
 
-![WP Activity Logger Pro overview](docs/visuals/plugin-overview.svg)
+![TracePilot for WordPress overview](docs/visuals/tracepilot-overview.svg)
 
 ## Overview
 
@@ -59,9 +59,9 @@ The plugin combines several admin-focused workflows in one place:
 
 ## Installation
 
-1. Upload the plugin to `wp-content/plugins/wp-activity-logger`.
+1. Upload the plugin to `wp-content/plugins/tracepilot-for-wordpress`.
 2. Activate it from the WordPress `Plugins` screen.
-3. Open `Activity Logger` from the admin menu.
+3. Open `TracePilot` from the admin menu.
 4. Configure privacy, notifications, diagnostics, and threat detection settings to match your site.
 
 ## Documentation map
@@ -84,9 +84,9 @@ This repository has been tightened toward WordPress plugin standards:
 ## Developer example
 
 ```php
-WPAL_Helpers::init();
+TracePilot_Helpers::init();
 
-WPAL_Helpers::log_activity(
+TracePilot_Helpers::log_activity(
     'custom_action',
     __('Custom action recorded from another plugin.', 'wp-activity-logger-pro'),
     'info',
@@ -105,5 +105,4 @@ WPAL_Helpers::log_activity(
 
 ## Version
 
-Current documented release: `1.3.0`
-
+Current documented release: `1.3.1`

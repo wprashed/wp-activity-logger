@@ -1,12 +1,12 @@
-# WP Activity Logger Pro - User Guide
+# TracePilot for WordPress - User Guide
 
 ## Introduction
 
-Welcome to the WP Activity Logger Pro user guide. This document will help you understand how to use the plugin effectively to monitor and track activities on your WordPress site.
+Welcome to the TracePilot for WordPress user guide. This document will help you understand how to use the plugin effectively to monitor and track activities on your WordPress site.
 
 ## Getting Started
 
-After activating the plugin, you'll find a new menu item "Activity Logger" in your WordPress admin menu. This is your gateway to all the plugin's features.
+After activating the plugin, you'll find a new menu item "TracePilot" in your WordPress admin menu. This is your gateway to all the plugin's features.
 
 ## Dashboard
 
@@ -143,4 +143,4 @@ This information is valuable when seeking support.
 
 ## Conclusion
 
-WP Activity Logger Pro provides comprehensive activity tracking for your WordPress site. By regularly reviewing the logs and setting up appropriate notifications, you can maintain better security and gain valuable insights into how your site is being used.
+TracePilot for WordPress provides comprehensive activity tracking for your WordPress site. By regularly reviewing the logs and setting up appropriate notifications, you can maintain better security and gain valuable insights into how your site is being used.

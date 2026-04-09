@@ -11,12 +11,12 @@ if (!defined('ABSPATH')) {
     exit();
 }
 
-class WPAL_Visual_Analytics {
+class TracePilot_Visual_Analytics {
     /**
      * Constructor
      */
     public function __construct() {
-        add_action('wp_ajax_wpal_get_analytics_data', array($this, 'ajax_get_analytics_data'));
+        add_action('wp_ajax_tracepilot_get_analytics_data', array($this, 'ajax_get_analytics_data'));
     }
 
     /**
@@ -27,7 +27,7 @@ class WPAL_Visual_Analytics {
             'wp-activity-logger-pro',
             __('Analytics', 'wp-activity-logger-pro'),
             __('Analytics', 'wp-activity-logger-pro'),
-            WPAL_Helpers::get_admin_capability(),
+            TracePilot_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-analytics',
             array($this, 'render_page')
         );
@@ -37,7 +37,7 @@ class WPAL_Visual_Analytics {
      * Render page
      */
     public function render_page() {
-        include WPAL_PLUGIN_DIR . 'templates/analytics.php';
+        include TracePilot_PLUGIN_DIR . 'templates/analytics.php';
     }
     
     /**
@@ -45,12 +45,12 @@ class WPAL_Visual_Analytics {
      */
     public function ajax_get_analytics_data() {
         // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wpal_nonce')) {
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'wp-activity-logger-pro')));
         }
         
         // Check permissions
-        if (!WPAL_Helpers::current_user_can_manage()) {
+        if (!TracePilot_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
@@ -94,8 +94,8 @@ class WPAL_Visual_Analytics {
      */
     private function get_activity_over_time($date_range, $group_by) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Calculate date range
         $dates = $this->calculate_date_range($date_range);
@@ -189,8 +189,8 @@ class WPAL_Visual_Analytics {
      */
     private function get_activity_by_user($date_range) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Calculate date range
         $dates = $this->calculate_date_range($date_range);
@@ -254,8 +254,8 @@ class WPAL_Visual_Analytics {
      */
     private function get_activity_by_type($date_range) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Calculate date range
         $dates = $this->calculate_date_range($date_range);
@@ -319,8 +319,8 @@ class WPAL_Visual_Analytics {
      */
     private function get_activity_heatmap($date_range) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Calculate date range
         $dates = $this->calculate_date_range($date_range);
@@ -388,8 +388,8 @@ class WPAL_Visual_Analytics {
      */
     private function get_severity_distribution($date_range) {
         global $wpdb;
-        WPAL_Helpers::init();
-        $table_name = WPAL_Helpers::$db_table;
+        TracePilot_Helpers::init();
+        $table_name = TracePilot_Helpers::$db_table;
         
         // Calculate date range
         $dates = $this->calculate_date_range($date_range);
