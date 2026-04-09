@@ -25,6 +25,8 @@ if (!$log) {
 
 $context = !empty($log->context) ? json_decode($log->context, true) : array();
 $settings = TracePilot_Helpers::get_settings();
+$display_ip = !empty($log->ip) ? TracePilot_Helpers::format_ip_for_display($log->ip) : '';
+$allow_ip_actions = !TracePilot_Helpers::should_mask_ip_in_ui();
 $window_hours = max(1, absint($settings['timeline_window_hours']));
 
 $timeline = $wpdb->get_results(
@@ -81,12 +83,12 @@ $timeline = $wpdb->get_results(
                 <dt><?php esc_html_e('Role', 'wp-activity-logger-pro'); ?></dt>
                 <dd><?php echo esc_html($log->user_role ? $log->user_role : '—'); ?></dd>
                 <dt><?php esc_html_e('IP', 'wp-activity-logger-pro'); ?></dt>
-                <dd><?php echo esc_html($log->ip ? $log->ip : '—'); ?></dd>
+                <dd><?php echo esc_html($display_ip ? $display_ip : '—'); ?></dd>
                 <dt><?php esc_html_e('Browser', 'wp-activity-logger-pro'); ?></dt>
                 <dd><?php echo esc_html($log->browser ? $log->browser : '—'); ?></dd>
             </dl>
             <div class="tracepilot-inline-actions" style="margin-top:14px;">
-                <?php if (!empty($log->ip)) : ?>
+                <?php if (!empty($log->ip) && $allow_ip_actions) : ?>
                     <button type="button" class="tracepilot-btn tracepilot-btn-secondary tracepilot-block-ip" data-ip="<?php echo esc_attr($log->ip); ?>"><?php esc_html_e('Block IP', 'wp-activity-logger-pro'); ?></button>
                 <?php endif; ?>
                 <?php if (!empty($log->user_id)) : ?>

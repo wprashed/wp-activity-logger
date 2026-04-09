@@ -87,6 +87,14 @@ class TracePilot_Export {
         }
 
         $logs = $wpdb->get_results($query, ARRAY_A);
+        $settings = TracePilot_Helpers::get_settings();
+        $mask_ip_in_exports = !empty($settings['gdpr_mode']) || !empty($settings['anonymize_ip']) || !empty($settings['mask_ip_in_ui']);
+        if ($mask_ip_in_exports && !empty($logs)) {
+            foreach ($logs as &$log) {
+                $log['ip'] = isset($log['ip']) ? TracePilot_Helpers::format_ip_for_display($log['ip']) : '';
+            }
+            unset($log);
+        }
         $filename = sanitize_file_name('activity-logs-' . gmdate('Y-m-d'));
 
         nocache_headers();

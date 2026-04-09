@@ -24,7 +24,7 @@
 .tracepilot-wrap {
   box-sizing: border-box;
   color: var(--tracepilot-ink);
-  margin: 18px 20px 40px 0;
+  margin: 18px 20px 40px 20px !important;
   max-width: 1540px;
   position: relative;
   z-index: 2;
@@ -47,6 +47,7 @@ body.tracepilot-admin-screen #wpbody-content {
   border: 1px solid rgba(217, 226, 234, 0.9);
   border-radius: var(--tracepilot-radius);
   box-shadow: var(--tracepilot-shadow);
+  margin-top: 20px !important;
 }
 
 .tracepilot-hero {
@@ -631,9 +632,10 @@ body.tracepilot-admin-screen #wpbody-content {
 }
 
 .tracepilot-filter-grid {
+  align-items: end;
   display: grid;
   gap: 14px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .tracepilot-compact-grid {
@@ -695,14 +697,14 @@ body.tracepilot-admin-screen #wpbody-content {
   margin-bottom: 8px;
 }
 
-.tracepilot-filter-grid label,
-.tracepilot-form-stack label {
+.tracepilot-filter-grid label:not(.tracepilot-check):not(.tracepilot-check-card),
+.tracepilot-form-stack label:not(.tracepilot-check):not(.tracepilot-check-card) {
   display: block;
   min-width: 0;
 }
 
 .tracepilot-filter-grid > label > span,
-.tracepilot-form-stack > label > span {
+.tracepilot-form-stack > label:not(.tracepilot-check):not(.tracepilot-check-card) > span {
   color: var(--tracepilot-ink);
   display: block;
   font-size: 13px;
@@ -710,21 +712,26 @@ body.tracepilot-admin-screen #wpbody-content {
 }
 
 .tracepilot-input {
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid #ccd8e3;
-  border-radius: 12px;
-  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02);
-  box-sizing: border-box;
-  color: var(--tracepilot-ink);
-  margin-top: 6px;
-  min-height: 44px;
-  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid #ccd8e3 !important;
+  border-radius: 12px !important;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.02) !important;
+  box-sizing: border-box !important;
+  color: var(--tracepilot-ink) !important;
+  margin-top: 6px !important;
+  min-height: 44px !important;
+  padding: 10px 12px !important;
   width: 100%;
 }
 
+.tracepilot-input[type="search"] {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
 .tracepilot-input:focus {
-  border-color: rgba(23, 59, 99, 0.42);
-  box-shadow: 0 0 0 4px rgba(23, 59, 99, 0.08);
+  border-color: rgba(23, 59, 99, 0.42) !important;
+  box-shadow: 0 0 0 4px rgba(23, 59, 99, 0.08) !important;
   outline: none;
 }
 
@@ -737,8 +744,9 @@ body.tracepilot-admin-screen #wpbody-content {
 }
 
 .tracepilot-input-inline {
-  flex: 0 1 160px;
-  max-width: 160px;
+  flex: 0 1 240px;
+  max-width: 280px;
+  min-width: 180px;
 }
 
 textarea.tracepilot-input {
@@ -930,6 +938,7 @@ textarea.tracepilot-input {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-top: 10px;
 }
 
 .tracepilot-issue-card .tracepilot-suggestion-grid {
@@ -1015,9 +1024,33 @@ textarea.tracepilot-input {
   gap: 16px;
 }
 
-.tracepilot-form-stack label > span,
+.tracepilot-form-stack label:not(.tracepilot-check):not(.tracepilot-check-card) > span,
 .tracepilot-filter-grid > label > span {
   margin-bottom: 4px;
+}
+
+.tracepilot-filter-grid .tracepilot-filter-actions {
+  grid-column: 1 / -1;
+}
+
+.tracepilot-log-filter-bar > label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tracepilot-log-filter-bar > label > span {
+  color: var(--tracepilot-ink);
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.tracepilot-export-form .tracepilot-date-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .tracepilot-form-feedback {
@@ -1543,5 +1576,327 @@ textarea.tracepilot-input {
     position: static;
     display: block;
     margin-bottom: 6px;
+  }
+}
+
+/* TracePilot Modern Refresh */
+:root {
+  --tracepilot-bg: #eef3f8;
+  --tracepilot-card-bg: rgba(255, 255, 255, 0.96);
+  --tracepilot-card-border: #d8e1ea;
+  --tracepilot-title: #18212b;
+  --tracepilot-text: #2e3e4f;
+  --tracepilot-brand-2: #ef7a3e;
+  --tracepilot-focus: rgba(31, 77, 125, 0.18);
+}
+
+body.tracepilot-admin-screen #wpbody-content {
+  background:
+    radial-gradient(circle at 0 0, rgba(239, 122, 62, 0.1), transparent 30%),
+    radial-gradient(circle at 100% 0, rgba(25, 63, 99, 0.1), transparent 34%),
+    linear-gradient(180deg, #f6f9fc 0%, var(--tracepilot-bg) 100%);
+  padding-bottom: 100px;
+}
+
+.tracepilot-wrap {
+  color: var(--tracepilot-text);
+  font-family: "Segoe UI", Inter, "Helvetica Neue", Arial, sans-serif;
+  max-width: 1660px;
+}
+
+.tracepilot-hero,
+.tracepilot-panel,
+.tracepilot-stat-card,
+.tracepilot-stream-card,
+.tracepilot-detail-card {
+  background: var(--tracepilot-card-bg);
+  border: 1px solid var(--tracepilot-card-border);
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+}
+
+.tracepilot-panel-head h2,
+.tracepilot-page-title,
+.tracepilot-stream-primary h3,
+.tracepilot-detail h2,
+.tracepilot-detail h3 {
+  color: var(--tracepilot-title);
+}
+
+.tracepilot-hero {
+  padding: 26px 28px;
+}
+
+.tracepilot-pill {
+  background: #f3f6fa;
+  border-color: #d2dce8;
+  color: #24496d;
+}
+
+.tracepilot-panel-tabs {
+  background: #f8fafc;
+  border: 1px solid var(--tracepilot-card-border);
+  border-radius: 14px;
+  padding: 8px;
+}
+
+.tracepilot-panel-tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: #4b637c;
+  font-size: 14px;
+  min-height: 40px;
+  padding: 8px 14px;
+}
+
+.tracepilot-panel-tab:hover {
+  background: #eef3f8;
+  border-color: #d9e3ee;
+}
+
+.tracepilot-panel-tab.is-active {
+  background: #1f4e7a;
+  border-color: #1f4e7a;
+  color: #fff;
+  box-shadow: 0 8px 16px rgba(22, 55, 88, 0.24);
+}
+
+.tracepilot-btn {
+  border-radius: 12px;
+  font-size: 14px;
+  min-height: 50px !important;
+  padding: 0 16px;
+}
+
+.tracepilot-btn-primary {
+  background: linear-gradient(135deg, var(--tracepilot-brand), var(--tracepilot-brand-2));
+  border-color: rgba(170, 70, 27, 0.3);
+}
+
+.tracepilot-btn-secondary {
+  background: #f4f7fb;
+  border-color: #d4deea;
+  color: #23466b;
+}
+
+.tracepilot-btn-danger {
+  background: linear-gradient(135deg, #c63c32, #dd5246);
+}
+
+.tracepilot-input,
+.tracepilot-wrap select,
+.tracepilot-wrap textarea {
+  background: #fff;
+  border: 1px solid #cfdbe7;
+  border-radius: 12px;
+  color: #1e2a36;
+  font-size: 14px;
+  min-height: 42px;
+}
+
+.tracepilot-input:focus,
+.tracepilot-wrap select:focus,
+.tracepilot-wrap textarea:focus {
+  border-color: #2a6296;
+  box-shadow: 0 0 0 4px var(--tracepilot-focus);
+}
+
+.tracepilot-wrap .tracepilot-check-card,
+.tracepilot-wrap .tracepilot-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.tracepilot-wrap .tracepilot-check-card > span,
+.tracepilot-wrap .tracepilot-check > span {
+  display: block;
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+}
+
+.tracepilot-wrap .tracepilot-check {
+  align-items: center;
+}
+
+.tracepilot-wrap .tracepilot-check-card.tracepilot-check-card-compact {
+  align-items: center;
+}
+
+.tracepilot-wrap .tracepilot-check-card input[type="checkbox"],
+.tracepilot-wrap .tracepilot-check input[type="checkbox"] {
+  -webkit-appearance: checkbox !important;
+  appearance: auto !important;
+  accent-color: var(--tracepilot-brand);
+  border: 0 !important;
+  box-shadow: none !important;
+  flex: 0 0 18px;
+  height: 18px;
+  margin-top: 2px;
+  min-width: 18px;
+  width: 18px;
+}
+
+.tracepilot-wrap .tracepilot-check-card input[type="checkbox"]::after,
+.tracepilot-wrap .tracepilot-check input[type="checkbox"]::after {
+  content: none !important;
+}
+
+.tracepilot-check-card {
+  background: #f8fafc;
+  border-color: #d8e2ec;
+  border-radius: 14px;
+}
+
+.tracepilot-check-card:hover {
+  border-color: #b9cce0;
+  transform: translateY(-1px);
+}
+
+.tracepilot-check-card strong {
+  font-size: 16px;
+}
+
+.tracepilot-check-card small,
+.tracepilot-list-subtext,
+.tracepilot-panel-head p,
+.tracepilot-hero-copy {
+  color: #566c84;
+  font-size: 14px;
+}
+
+.tracepilot-suggestion-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.tracepilot-issue-card .tracepilot-suggestion-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.tracepilot-safe-mode-select {
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 220px;
+}
+
+.tracepilot-inline-actions .tracepilot-input-inline {
+  flex: 1 1 260px;
+  max-width: 320px;
+}
+
+.tracepilot-stream-card {
+  border-radius: 18px;
+  padding: 22px;
+}
+
+.tracepilot-stream-meta-item {
+  background: #f7f9fc;
+  border-color: #d8e2ec;
+  min-height: 92px;
+}
+
+.tracepilot-form-feedback {
+  display: none;
+}
+
+.tracepilot-form-feedback:not(:empty) {
+  background: rgba(31, 78, 122, 0.1);
+  border: 1px solid rgba(31, 78, 122, 0.2);
+  border-radius: 999px;
+  color: #1f4e7a;
+  display: inline-flex;
+  font-size: 13px;
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.tracepilot-gdpr-note {
+  display: grid;
+  gap: 10px;
+}
+
+.tracepilot-gdpr-note > strong {
+  color: var(--tracepilot-title);
+  font-size: 15px;
+}
+
+.tracepilot-gdpr-note p {
+  margin: 0;
+}
+
+.tracepilot-notice-stack .notice,
+.tracepilot-notice-stack .update-nag,
+.tracepilot-notice-stack .error,
+.tracepilot-notice-card {
+  background: #fff;
+  border: 1px solid #d6e0eb !important;
+  border-left: 4px solid var(--tracepilot-brand) !important;
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+@media (max-width: 1200px) {
+  .tracepilot-filter-grid,
+  .tracepilot-log-filter-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tracepilot-export-form .tracepilot-date-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracepilot-diagnostics-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .tracepilot-diagnostics-side {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 782px) {
+  .tracepilot-wrap {
+    margin-right: 10px;
+  }
+
+  .tracepilot-panel-tabs {
+    gap: 6px;
+  }
+
+  .tracepilot-panel-tab {
+    flex: 1 1 calc(50% - 6px);
+    justify-content: center;
+    text-align: center;
+  }
+
+  .tracepilot-filter-grid,
+  .tracepilot-log-filter-bar,
+  .tracepilot-compact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracepilot-inline-actions .tracepilot-input-inline {
+    flex: 1 1 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .tracepilot-stream-body {
+    grid-template-columns: 1fr;
+  }
+
+  .tracepilot-stream-meta-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tracepilot-stream-actions {
+    justify-content: stretch;
+  }
+
+  .tracepilot-stream-actions .tracepilot-btn {
+    width: 100%;
   }
 }

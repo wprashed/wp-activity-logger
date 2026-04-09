@@ -71,6 +71,8 @@ class TracePilot_Settings {
             'vulnerability_include_file_integrity',
             'enable_geolocation',
             'anonymize_ip',
+            'gdpr_mode',
+            'mask_ip_in_ui',
             'plugin_changes_locked',
             'weekly_summary_enabled',
         );
@@ -122,7 +124,35 @@ class TracePilot_Settings {
             $sanitized['default_export_format'] = $export_format;
         }
 
+        if (!empty($sanitized['gdpr_mode'])) {
+            $sanitized['anonymize_ip'] = 1;
+            $sanitized['enable_geolocation'] = 0;
+            $sanitized['mask_ip_in_ui'] = 1;
+            $sanitized['log_retention'] = min(max(7, $sanitized['log_retention']), 90);
+            $sanitized['retention_info_days'] = min(max(7, $sanitized['retention_info_days']), 90);
+            $sanitized['retention_warning_days'] = min(max(14, $sanitized['retention_warning_days']), 180);
+            $sanitized['retention_error_days'] = min(max(30, $sanitized['retention_error_days']), 365);
+
+            $sanitized['redact_context_keys'] = $this->merge_redaction_keys(
+                $sanitized['redact_context_keys'],
+                array('password', 'pass', 'pwd', 'token', 'secret', 'authorization', 'cookie', 'email', 'phone', 'ip', 'first_name', 'last_name', 'address')
+            );
+        }
+
         return wp_parse_args($sanitized, $defaults);
+    }
+
+    /**
+     * Merge redaction keys without duplicates.
+     *
+     * @param string $value Existing textarea value.
+     * @param array  $required Required keys.
+     * @return string
+     */
+    private function merge_redaction_keys($value, $required) {
+        $existing = array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string) $value)));
+        $merged = array_values(array_unique(array_filter(array_map('sanitize_key', array_merge($existing, (array) $required)))));
+        return implode(',', $merged);
     }
 
     /**

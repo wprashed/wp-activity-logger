@@ -356,15 +356,18 @@ jQuery(function($) {
             const rows = data.threats.map(function(threat) {
                 const badgeClass = threat.severity === 'high' ? 'danger' : (threat.severity === 'medium' ? 'warning' : 'info');
                 const badge = '<span class="tracepilot-badge tracepilot-badge-' + badgeClass + '">' + threat.severity.charAt(0).toUpperCase() + threat.severity.slice(1) + '</span>';
-                const label = threat.type.replace(/_/g, ' ');
-                const userAction = threat.user_id ? '<button type="button" class="tracepilot-btn tracepilot-btn-secondary tracepilot-force-logout" data-user-id="' + threat.user_id + '"><?php echo esc_js(__('Force Logout', 'wp-activity-logger-pro')); ?></button>' : '';
-                const ipAction = threat.ip ? '<button type="button" class="tracepilot-btn tracepilot-btn-secondary tracepilot-block-ip" data-ip="' + threat.ip + '"><?php echo esc_js(__('Block IP', 'wp-activity-logger-pro')); ?></button>' : '';
+                const label = $('<div>').text((threat.type || '').replace(/_/g, ' ')).html();
+                const description = $('<div>').text(threat.description || '').html();
+                const threatIp = $('<div>').text(threat.ip || '—').html();
+                const threatTime = $('<div>').text(threat.last_attempt || threat.login_time || threat.time || '—').html();
+                const userAction = threat.user_id ? '<button type="button" class="tracepilot-btn tracepilot-btn-secondary tracepilot-force-logout" data-user-id="' + Number(threat.user_id) + '"><?php echo esc_js(__('Force Logout', 'wp-activity-logger-pro')); ?></button>' : '';
+                const ipAction = threat.raw_ip ? '<button type="button" class="tracepilot-btn tracepilot-btn-secondary tracepilot-block-ip" data-ip="' + $('<div>').text(threat.raw_ip).html() + '"><?php echo esc_js(__('Block IP', 'wp-activity-logger-pro')); ?></button>' : '';
                 return '<tr>' +
                     '<td data-label="<?php echo esc_js(__('Severity', 'wp-activity-logger-pro')); ?>">' + badge + '</td>' +
                     '<td data-label="<?php echo esc_js(__('Type', 'wp-activity-logger-pro')); ?>">' + label + '</td>' +
-                    '<td data-label="<?php echo esc_js(__('Description', 'wp-activity-logger-pro')); ?>">' + threat.description + '</td>' +
-                    '<td data-label="<?php echo esc_js(__('IP', 'wp-activity-logger-pro')); ?>">' + (threat.ip || '—') + '</td>' +
-                    '<td data-label="<?php echo esc_js(__('Time', 'wp-activity-logger-pro')); ?>">' + (threat.last_attempt || threat.login_time || threat.time || '—') + '</td>' +
+                    '<td data-label="<?php echo esc_js(__('Description', 'wp-activity-logger-pro')); ?>">' + description + '</td>' +
+                    '<td data-label="<?php echo esc_js(__('IP', 'wp-activity-logger-pro')); ?>">' + threatIp + '</td>' +
+                    '<td data-label="<?php echo esc_js(__('Time', 'wp-activity-logger-pro')); ?>">' + threatTime + '</td>' +
                     '<td data-label="<?php echo esc_js(__('Actions', 'wp-activity-logger-pro')); ?>" class="tracepilot-table-actions">' + ipAction + userAction + '</td>' +
                 '</tr>';
             });

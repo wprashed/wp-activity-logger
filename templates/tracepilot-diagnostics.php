@@ -239,7 +239,7 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                                 type="button"
                                 class="tracepilot-btn tracepilot-btn-outline-primary tracepilot-btn-sm tracepilot-safe-mode-preset"
                                 data-plugins="<?php echo esc_attr(wp_json_encode(wp_list_pluck((array) $conflict_plan['group_a'], 'file'))); ?>"
-                            ><?php esc_html_e('Disable This Group In Safe Mode', 'wp-activity-logger-pro'); ?></button>
+                            ><?php esc_html_e('Disable Group', 'wp-activity-logger-pro'); ?></button>
                         </div>
                     <?php endif; ?>
                     <?php if (!empty($conflict_plan['group_b'])) : ?>
@@ -253,7 +253,7 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                                 type="button"
                                 class="tracepilot-btn tracepilot-btn-outline-primary tracepilot-btn-sm tracepilot-safe-mode-preset"
                                 data-plugins="<?php echo esc_attr(wp_json_encode(wp_list_pluck((array) $conflict_plan['group_b'], 'file'))); ?>"
-                            ><?php esc_html_e('Disable This Group In Safe Mode', 'wp-activity-logger-pro'); ?></button>
+                            ><?php esc_html_e('Disable Group', 'wp-activity-logger-pro'); ?></button>
                         </div>
                     <?php endif; ?>
                 </div>

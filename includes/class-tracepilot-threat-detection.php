@@ -58,11 +58,38 @@ class TracePilot_Threat_Detection {
         
         // Run threat analysis
         $threats = $this->run_threat_analysis();
+        $threats = array_map(array($this, 'prepare_threat_for_response'), $threats);
         
         wp_send_json_success(array(
             'threats' => $threats,
             'summary' => $this->get_threat_summary($threats)
         ));
+    }
+
+    /**
+     * Prepare threat payload for secure admin UI rendering.
+     *
+     * @param array $threat Threat item.
+     * @return array
+     */
+    private function prepare_threat_for_response($threat) {
+        if (!is_array($threat)) {
+            return array();
+        }
+
+        $raw_ip = isset($threat['ip']) ? (string) $threat['ip'] : '';
+        if ('' !== $raw_ip) {
+            $display_ip = TracePilot_Helpers::format_ip_for_display($raw_ip);
+            $threat['ip'] = $display_ip;
+            $threat['raw_ip'] = TracePilot_Helpers::should_mask_ip_in_ui() ? '' : $raw_ip;
+            if (!empty($threat['description']) && $display_ip !== $raw_ip) {
+                $threat['description'] = str_replace($raw_ip, $display_ip, (string) $threat['description']);
+            }
+        } else {
+            $threat['raw_ip'] = '';
+        }
+
+        return $threat;
     }
     
     /**

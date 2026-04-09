@@ -77,6 +77,8 @@ class TracePilot_Helpers {
             'wpscan_api_token' => '',
             'enable_geolocation' => 1,
             'anonymize_ip' => 0,
+            'gdpr_mode' => 0,
+            'mask_ip_in_ui' => 0,
             'exclude_roles' => array(),
             'excluded_actions' => '',
             'suppressed_severities' => array(),
@@ -107,7 +109,86 @@ class TracePilot_Helpers {
             $settings = $legacy;
         }
 
-        return wp_parse_args($settings, $defaults);
+        $settings = wp_parse_args($settings, $defaults);
+
+        if (!empty($settings['gdpr_mode'])) {
+            $settings = self::apply_gdpr_guardrails($settings);
+        }
+
+        return $settings;
+    }
+
+    /**
+     * Enforce GDPR-oriented privacy defaults when GDPR mode is enabled.
+     *
+     * @param array $settings Current settings.
+     * @return array
+     */
+    private static function apply_gdpr_guardrails($settings) {
+        $settings['anonymize_ip'] = 1;
+        $settings['enable_geolocation'] = 0;
+        $settings['mask_ip_in_ui'] = 1;
+
+        $settings['log_retention'] = min(max(7, absint($settings['log_retention'])), 90);
+        $settings['retention_info_days'] = min(max(7, absint($settings['retention_info_days'])), 90);
+        $settings['retention_warning_days'] = min(max(14, absint($settings['retention_warning_days'])), 180);
+        $settings['retention_error_days'] = min(max(30, absint($settings['retention_error_days'])), 365);
+
+        $required_keys = array(
+            'password',
+            'pass',
+            'pwd',
+            'token',
+            'secret',
+            'authorization',
+            'cookie',
+            'email',
+            'phone',
+            'ip',
+            'first_name',
+            'last_name',
+            'address',
+        );
+
+        $current_keys = array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string) $settings['redact_context_keys'])));
+        $merged_keys = array_values(array_unique(array_filter(array_map('sanitize_key', array_merge($current_keys, $required_keys)))));
+        $settings['redact_context_keys'] = implode(',', $merged_keys);
+
+        return $settings;
+    }
+
+    /**
+     * Determine whether sensitive IP data should be masked in admin UI.
+     *
+     * @return bool
+     */
+    public static function should_mask_ip_in_ui() {
+        $settings = self::get_settings();
+        return !empty($settings['mask_ip_in_ui']) || !empty($settings['gdpr_mode']) || !empty($settings['anonymize_ip']);
+    }
+
+    /**
+     * Format an IP address for UI display based on privacy settings.
+     *
+     * @param string $ip Raw IP address.
+     * @return string
+     */
+    public static function format_ip_for_display($ip) {
+        $ip = (string) $ip;
+        if ('' === $ip) {
+            return '';
+        }
+
+        if (!self::should_mask_ip_in_ui()) {
+            return $ip;
+        }
+
+        $masked = self::anonymize_ip($ip);
+        if ($masked !== $ip) {
+            return $masked;
+        }
+
+        return substr($ip, 0, 3) . '***';
     }
 
     /**

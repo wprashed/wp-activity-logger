@@ -22,6 +22,7 @@ $severity_labels = array(
 $redacted_keys_count = $settings['redact_context_keys'] ? count(array_filter(array_map('trim', preg_split('/[\r\n,]+/', (string) $settings['redact_context_keys'])))) : 0;
 $notification_channels_count = count(array_filter(array($settings['notification_email'], $settings['webhook_url'], $settings['slack_webhook_url'], $settings['discord_webhook_url'], $settings['telegram_bot_token'])));
 $threat_rule_count = (int) $settings['monitor_failed_logins'] + (int) $settings['monitor_unusual_logins'] + (int) $settings['monitor_file_changes'] + (int) $settings['monitor_privilege_escalation'];
+$gdpr_mode_enabled = !empty($settings['gdpr_mode']);
 ?>
 
 <div class="wrap tracepilot-wrap">
@@ -29,12 +30,13 @@ $threat_rule_count = (int) $settings['monitor_failed_logins'] + (int) $settings[
         <div>
             <p class="tracepilot-eyebrow"><?php esc_html_e('Controls', 'wp-activity-logger-pro'); ?></p>
             <h1 class="tracepilot-page-title"><?php esc_html_e('Settings', 'wp-activity-logger-pro'); ?></h1>
-            <p class="tracepilot-hero-copy"><?php esc_html_e('Configure alert routing, privacy rules, suppression filters, export defaults, and timeline behavior from one place.', 'wp-activity-logger-pro'); ?></p>
+            <p class="tracepilot-hero-copy"><?php esc_html_e('Configure alert routing, privacy rules, suppression filters, export defaults, timeline behavior, and GDPR safety controls from one place.', 'wp-activity-logger-pro'); ?></p>
         </div>
         <div class="tracepilot-hero-actions">
             <span class="tracepilot-pill"><?php echo !empty($settings['enable_notifications']) ? esc_html__('Alerts enabled', 'wp-activity-logger-pro') : esc_html__('Alerts paused', 'wp-activity-logger-pro'); ?></span>
             <span class="tracepilot-pill"><?php echo !empty($settings['anonymize_ip']) ? esc_html__('IP anonymized', 'wp-activity-logger-pro') : esc_html__('Full IP logging', 'wp-activity-logger-pro'); ?></span>
             <span class="tracepilot-pill"><?php echo !empty($settings['daily_summary_enabled']) ? esc_html__('Daily summaries on', 'wp-activity-logger-pro') : esc_html__('Daily summaries off', 'wp-activity-logger-pro'); ?></span>
+            <span class="tracepilot-pill"><?php echo $gdpr_mode_enabled ? esc_html__('GDPR mode on', 'wp-activity-logger-pro') : esc_html__('GDPR mode off', 'wp-activity-logger-pro'); ?></span>
         </div>
     </section>
 
@@ -84,8 +86,24 @@ $threat_rule_count = (int) $settings['monitor_failed_logins'] + (int) $settings[
                 <span class="tracepilot-pill"><?php printf(esc_html__('%d day retention', 'wp-activity-logger-pro'), (int) $settings['log_retention']); ?></span>
                 <span class="tracepilot-pill"><?php echo !empty($settings['anonymize_ip']) ? esc_html__('IP anonymization on', 'wp-activity-logger-pro') : esc_html__('Full IP capture', 'wp-activity-logger-pro'); ?></span>
                 <span class="tracepilot-pill"><?php printf(esc_html__('%d redacted key(s)', 'wp-activity-logger-pro'), $redacted_keys_count); ?></span>
+                <span class="tracepilot-pill"><?php echo $gdpr_mode_enabled ? esc_html__('GDPR guardrails enabled', 'wp-activity-logger-pro') : esc_html__('Manual privacy controls', 'wp-activity-logger-pro'); ?></span>
             </div>
             <div class="tracepilot-form-stack">
+                <div class="tracepilot-note tracepilot-gdpr-note">
+                    <strong><?php esc_html_e('GDPR mode', 'wp-activity-logger-pro'); ?></strong>
+                    <p><?php esc_html_e('When enabled, TracePilot enforces safer defaults: IP anonymization on, geolocation off, stricter retention, and automatic redaction of common personal-data keys.', 'wp-activity-logger-pro'); ?></p>
+                    <label class="tracepilot-check">
+                        <input type="checkbox" name="wpal_options[gdpr_mode]" value="1" <?php checked($settings['gdpr_mode'], 1); ?>>
+                        <span><?php esc_html_e('Enable GDPR privacy guardrails', 'wp-activity-logger-pro'); ?></span>
+                    </label>
+                    <label class="tracepilot-check">
+                        <input type="checkbox" name="wpal_options[mask_ip_in_ui]" value="1" <?php checked($settings['mask_ip_in_ui'], 1); ?> <?php disabled($gdpr_mode_enabled); ?>>
+                        <span><?php esc_html_e('Mask IP addresses in admin UI', 'wp-activity-logger-pro'); ?></span>
+                    </label>
+                    <?php if ($gdpr_mode_enabled) : ?>
+                        <p class="tracepilot-list-subtext"><?php esc_html_e('IP masking is locked while GDPR mode is enabled.', 'wp-activity-logger-pro'); ?></p>
+                    <?php endif; ?>
+                </div>
                 <label>
                     <span><?php esc_html_e('Log retention (days)', 'wp-activity-logger-pro'); ?></span>
                     <input class="tracepilot-input" type="number" min="0" name="wpal_options[log_retention]" value="<?php echo esc_attr($settings['log_retention']); ?>">

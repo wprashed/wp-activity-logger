@@ -62,7 +62,20 @@ foreach ($severity_rows as $row) {
         </div>
     </section>
 
-    <section class="tracepilot-grid tracepilot-grid-2">
+    <section class="tracepilot-grid">
+
+        <article class="tracepilot-panel">
+            <div class="tracepilot-panel-head">
+                <div>
+                    <h2><?php esc_html_e('Severity Mix', 'wp-activity-logger-pro'); ?></h2>
+                    <p><?php esc_html_e('A quick view of how noisy the event stream is.', 'wp-activity-logger-pro'); ?></p>
+                </div>
+            </div>
+            <div class="tracepilot-chart-shell tracepilot-chart-shell-sm">
+                <canvas id="tracepilot-logs-severity"></canvas>
+            </div>
+        </article>
+
         <article class="tracepilot-panel">
             <div class="tracepilot-panel-head">
                 <div>
@@ -128,18 +141,7 @@ foreach ($severity_rows as $row) {
                 </div>
             </form>
         </article>
-
-        <article class="tracepilot-panel">
-            <div class="tracepilot-panel-head">
-                <div>
-                    <h2><?php esc_html_e('Severity Mix', 'wp-activity-logger-pro'); ?></h2>
-                    <p><?php esc_html_e('A quick view of how noisy the event stream is.', 'wp-activity-logger-pro'); ?></p>
-                </div>
-            </div>
-            <div class="tracepilot-chart-shell tracepilot-chart-shell-sm">
-                <canvas id="tracepilot-logs-severity"></canvas>
-            </div>
-        </article>
+        
     </section>
 
     <section class="tracepilot-panel">
@@ -150,63 +152,6 @@ foreach ($severity_rows as $row) {
             </div>
         </div>
 
-        <form method="get" class="tracepilot-log-filter-bar">
-            <input type="hidden" name="page" value="wp-activity-logger-pro-logs">
-            <label class="tracepilot-log-filter-search">
-                <span><?php esc_html_e('Search', 'wp-activity-logger-pro'); ?></span>
-                <input type="search" name="s" value="<?php echo esc_attr($search); ?>" class="tracepilot-input" placeholder="<?php esc_attr_e('Search usernames, actions, descriptions', 'wp-activity-logger-pro'); ?>">
-            </label>
-            <label>
-                <span><?php esc_html_e('Severity', 'wp-activity-logger-pro'); ?></span>
-                <select name="severity_filter" class="tracepilot-input">
-                    <option value=""><?php esc_html_e('All severities', 'wp-activity-logger-pro'); ?></option>
-                    <option value="info" <?php selected($severity_filter, 'info'); ?>><?php esc_html_e('Info', 'wp-activity-logger-pro'); ?></option>
-                    <option value="warning" <?php selected($severity_filter, 'warning'); ?>><?php esc_html_e('Warning', 'wp-activity-logger-pro'); ?></option>
-                    <option value="error" <?php selected($severity_filter, 'error'); ?>><?php esc_html_e('Error', 'wp-activity-logger-pro'); ?></option>
-                </select>
-            </label>
-            <label>
-                <span><?php esc_html_e('Action', 'wp-activity-logger-pro'); ?></span>
-                <select name="action_filter" class="tracepilot-input">
-                    <option value=""><?php esc_html_e('All actions', 'wp-activity-logger-pro'); ?></option>
-                    <?php foreach ($actions as $action) : ?>
-                        <option value="<?php echo esc_attr($action); ?>" <?php selected($action_filter, $action); ?>><?php echo esc_html($action); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-            <label>
-                <span><?php esc_html_e('Role', 'wp-activity-logger-pro'); ?></span>
-                <select name="role_filter" class="tracepilot-input">
-                    <option value=""><?php esc_html_e('All roles', 'wp-activity-logger-pro'); ?></option>
-                    <?php foreach ($roles as $role) : ?>
-                        <option value="<?php echo esc_attr($role); ?>" <?php selected($role_filter, $role); ?>><?php echo esc_html($role); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </label>
-            <label>
-                <span><?php esc_html_e('From', 'wp-activity-logger-pro'); ?></span>
-                <input type="text" name="date_from" value="<?php echo esc_attr($date_from); ?>" class="tracepilot-input tracepilot-datepicker" placeholder="<?php esc_attr_e('YYYY-MM-DD', 'wp-activity-logger-pro'); ?>">
-            </label>
-            <label>
-                <span><?php esc_html_e('To', 'wp-activity-logger-pro'); ?></span>
-                <input type="text" name="date_to" value="<?php echo esc_attr($date_to); ?>" class="tracepilot-input tracepilot-datepicker" placeholder="<?php esc_attr_e('YYYY-MM-DD', 'wp-activity-logger-pro'); ?>">
-            </label>
-            <?php if (is_multisite() && is_network_admin()) : ?>
-                <label>
-                    <span><?php esc_html_e('Site', 'wp-activity-logger-pro'); ?></span>
-                    <select name="site_id" class="tracepilot-input">
-                        <option value="0"><?php esc_html_e('All sites', 'wp-activity-logger-pro'); ?></option>
-                        <?php foreach ($sites as $site) : ?>
-                            <option value="<?php echo esc_attr($site->blog_id); ?>" <?php selected($site_filter, (int) $site->blog_id); ?>><?php echo esc_html($site->blogname ? $site->blogname : $site->domain); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </label>
-            <?php endif; ?>
-            <div class="tracepilot-filter-actions">
-                <button type="submit" class="tracepilot-btn tracepilot-btn-primary"><?php esc_html_e('Filter Logs', 'wp-activity-logger-pro'); ?></button>
-                <a class="tracepilot-btn tracepilot-btn-secondary" href="<?php echo esc_url(admin_url('admin.php?page=wp-activity-logger-pro-logs')); ?>"><?php esc_html_e('Clear', 'wp-activity-logger-pro'); ?></a>
-            </div>
-        </form>
 
         <?php if ($search || $severity_filter || $action_filter || $role_filter || $date_from || $date_to || $site_filter) : ?>
             <div class="tracepilot-toolbar-pills">
@@ -256,7 +201,7 @@ foreach ($severity_rows as $row) {
                                     </div>
                                     <div class="tracepilot-stream-meta-item">
                                         <span><?php esc_html_e('IP Address', 'wp-activity-logger-pro'); ?></span>
-                                        <strong><?php echo esc_html($log->ip ? $log->ip : '—'); ?></strong>
+                                        <strong><?php echo esc_html($log->ip ? TracePilot_Helpers::format_ip_for_display($log->ip) : '—'); ?></strong>
                                     </div>
                                     <div class="tracepilot-stream-meta-item">
                                         <span><?php esc_html_e('Event ID', 'wp-activity-logger-pro'); ?></span>
