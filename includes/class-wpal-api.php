@@ -27,7 +27,7 @@ class WPAL_API {
     private function guard_request() {
         check_ajax_referer('wpal_nonce', 'nonce');
 
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_die(__('You do not have permission to access this page.', 'wp-activity-logger-pro'));
         }
     }
@@ -167,7 +167,7 @@ class WPAL_API {
     public function delete_log() {
         check_ajax_referer('wpal_nonce', 'nonce');
 
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to delete logs.', 'wp-activity-logger-pro')));
         }
 
@@ -204,7 +204,7 @@ class WPAL_API {
     public function delete_all_logs() {
         check_ajax_referer('wpal_nonce', 'nonce');
 
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to delete logs.', 'wp-activity-logger-pro')));
         }
 
