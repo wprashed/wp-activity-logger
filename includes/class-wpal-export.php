@@ -13,6 +13,7 @@ class WPAL_Export {
      */
     public function __construct() {
         add_action('admin_menu', array($this, 'add_export_page'), 35);
+        add_action('network_admin_menu', array($this, 'add_export_page'), 35);
         add_action('wp_ajax_wpal_export_logs', array($this, 'export_logs'));
     }
 
@@ -24,7 +25,7 @@ class WPAL_Export {
             'wp-activity-logger-pro',
             __('Export', 'wp-activity-logger-pro'),
             __('Export', 'wp-activity-logger-pro'),
-            'manage_options',
+            WPAL_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-export',
             array($this, 'render_export_page')
         );
@@ -43,7 +44,7 @@ class WPAL_Export {
     public function export_logs() {
         check_ajax_referer('wpal_nonce', 'nonce');
 
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_die(__('You do not have permission to export logs.', 'wp-activity-logger-pro'));
         }
 
