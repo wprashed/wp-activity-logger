@@ -29,7 +29,7 @@ class WPAL_Threat_Detection {
             'wp-activity-logger-pro',
             __('Threat Detection', 'wp-activity-logger-pro'),
             __('Threat Detection', 'wp-activity-logger-pro'),
-            'manage_options',
+            WPAL_Helpers::get_admin_capability(),
             'wp-activity-logger-pro-threat-detection',
             array($this, 'render_page')
         );
@@ -52,7 +52,7 @@ class WPAL_Threat_Detection {
         }
         
         // Check permissions
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'wp-activity-logger-pro')));
         }
         
