@@ -27,7 +27,7 @@ class WPAL_File_Integrity {
      */
     public function ajax_build_baseline() {
         check_ajax_referer('wpal_nonce', 'nonce');
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('Permission denied.', 'wp-activity-logger-pro')));
         }
 
@@ -43,7 +43,7 @@ class WPAL_File_Integrity {
      */
     public function ajax_scan_integrity() {
         check_ajax_referer('wpal_nonce', 'nonce');
-        if (!current_user_can('manage_options')) {
+        if (!WPAL_Helpers::current_user_can_manage()) {
             wp_send_json_error(array('message' => __('Permission denied.', 'wp-activity-logger-pro')));
         }
 
