@@ -45,7 +45,7 @@ class WPAL_Export {
         check_ajax_referer('wpal_nonce', 'nonce');
 
         if (!WPAL_Helpers::current_user_can_manage()) {
-            wp_die(__('You do not have permission to export logs.', 'wp-activity-logger-pro'));
+            wp_die(esc_html__('You do not have permission to export logs.', 'wp-activity-logger-pro'));
         }
 
         $format = isset($_POST['format']) ? sanitize_key(wp_unslash($_POST['format'])) : 'csv';
@@ -87,7 +87,9 @@ class WPAL_Export {
         }
 
         $logs = $wpdb->get_results($query, ARRAY_A);
-        $filename = 'activity-logs-' . gmdate('Y-m-d');
+        $filename = sanitize_file_name('activity-logs-' . gmdate('Y-m-d'));
+
+        nocache_headers();
 
         switch ($format) {
             case 'json':
@@ -112,16 +114,18 @@ class WPAL_Export {
             case 'pdf':
                 header('Content-Type: text/plain; charset=utf-8');
                 header('Content-Disposition: attachment; filename=' . $filename . '.txt');
-                echo "WP Activity Logger Export\n\n";
+                echo esc_html__("WP Activity Logger Export\n\n", 'wp-activity-logger-pro');
                 foreach ($logs as $log) {
-                    echo sprintf(
-                        "[%s] %s | %s | %s | %s\n",
-                        $log['time'],
-                        $log['severity'],
-                        $log['username'],
-                        $log['action'],
-                        $log['description']
-                    );
+                    echo esc_html(
+                        sprintf(
+                            '[%1$s] %2$s | %3$s | %4$s | %5$s',
+                            $log['time'],
+                            $log['severity'],
+                            $log['username'],
+                            $log['action'],
+                            $log['description']
+                        )
+                    ) . "\n";
                 }
                 break;
 
