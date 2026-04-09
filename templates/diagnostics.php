@@ -93,8 +93,17 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
         </article>
     </section>
 
-    <section class="wpal-grid wpal-grid-2">
-        <article class="wpal-panel">
+    <section class="wpal-panel wpal-diagnostics-shell">
+        <div class="wpal-panel-tabs" data-wpal-tabs>
+            <button type="button" class="wpal-panel-tab is-active" data-tab-target="overview"><?php esc_html_e('Overview', 'wp-activity-logger-pro'); ?></button>
+            <button type="button" class="wpal-panel-tab" data-tab-target="timeline"><?php esc_html_e('Timeline', 'wp-activity-logger-pro'); ?></button>
+            <button type="button" class="wpal-panel-tab" data-tab-target="assistant"><?php esc_html_e('Assistant', 'wp-activity-logger-pro'); ?></button>
+            <button type="button" class="wpal-panel-tab" data-tab-target="inventory"><?php esc_html_e('Inventory', 'wp-activity-logger-pro'); ?></button>
+        </div>
+
+        <div class="wpal-tab-panel is-active" data-tab-panel="overview">
+            <section class="wpal-diagnostics-layout">
+                <article class="wpal-panel wpal-diagnostics-scroller">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('Issue List', 'wp-activity-logger-pro'); ?></h2>
@@ -164,9 +173,9 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-        </article>
+                </article>
 
-        <article class="wpal-panel">
+                <article class="wpal-panel wpal-diagnostics-side">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('Safe Mode Debugging', 'wp-activity-logger-pro'); ?></h2>
@@ -187,10 +196,11 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                 <?php endif; ?>
             </div>
 
-            <div class="wpal-form-stack">
+            <div class="wpal-safe-mode-card">
+                <div class="wpal-form-stack">
                 <label>
                     <span><?php esc_html_e('Plugins to hide in your admin session', 'wp-activity-logger-pro'); ?></span>
-                    <select multiple class="wpal-input wpal-select-tall" id="wpal-safe-mode-plugins">
+                    <select multiple class="wpal-input wpal-select-tall wpal-safe-mode-select" id="wpal-safe-mode-plugins">
                         <?php foreach ($active_plugins as $plugin) : ?>
                             <option value="<?php echo esc_attr($plugin['file']); ?>" <?php selected(in_array($plugin['file'], (array) ($safe_mode['plugins'] ?? array()), true)); ?>>
                                 <?php
@@ -204,11 +214,12 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                         <?php endforeach; ?>
                     </select>
                 </label>
-            </div>
+                </div>
 
-            <div class="wpal-inline-actions">
-                <button type="button" class="wpal-btn wpal-btn-secondary" id="wpal-enable-safe-mode-inline"><?php esc_html_e('Enable Safe Mode With Selection', 'wp-activity-logger-pro'); ?></button>
-                <button type="button" class="wpal-btn wpal-btn-outline-danger" id="wpal-disable-safe-mode-inline"><?php esc_html_e('Restore Normal Session', 'wp-activity-logger-pro'); ?></button>
+                <div class="wpal-inline-actions">
+                    <button type="button" class="wpal-btn wpal-btn-secondary" id="wpal-enable-safe-mode-inline"><?php esc_html_e('Enable Safe Mode With Selection', 'wp-activity-logger-pro'); ?></button>
+                    <button type="button" class="wpal-btn wpal-btn-outline-danger" id="wpal-disable-safe-mode-inline"><?php esc_html_e('Restore Normal Session', 'wp-activity-logger-pro'); ?></button>
+                </div>
             </div>
 
             <?php if (!empty($conflict_plan['group_a']) || !empty($conflict_plan['group_b'])) : ?>
@@ -247,11 +258,13 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
-        </article>
-    </section>
+                </article>
+            </section>
+        </div>
 
-    <section class="wpal-grid wpal-grid-2">
-        <article class="wpal-panel">
+        <div class="wpal-tab-panel" data-tab-panel="timeline">
+            <section class="wpal-grid wpal-grid-2">
+                <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('Issue Timeline', 'wp-activity-logger-pro'); ?></h2>
@@ -290,9 +303,9 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-        </article>
+                </article>
 
-        <article class="wpal-panel">
+                <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('Change Correlation', 'wp-activity-logger-pro'); ?></h2>
@@ -331,9 +344,13 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-        </article>
+                </article>
+            </section>
+        </div>
 
-        <article class="wpal-panel">
+        <div class="wpal-tab-panel" data-tab-panel="assistant">
+            <section class="wpal-grid wpal-grid-2">
+                <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('AI Assistant Preview', 'wp-activity-logger-pro'); ?></h2>
@@ -355,11 +372,9 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
             <div class="wpal-note" id="wpal-diagnostics-answer">
                 <?php esc_html_e('Ask about slowness, conflicts, what to disable first, or what the latest scan means.', 'wp-activity-logger-pro'); ?>
             </div>
-        </article>
-    </section>
+                </article>
 
-    <section class="wpal-grid wpal-grid-2">
-        <article class="wpal-panel">
+                <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('Recent Browser & Runtime Signals', 'wp-activity-logger-pro'); ?></h2>
@@ -391,9 +406,9 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-        </article>
+                </article>
 
-        <article class="wpal-panel">
+                <article class="wpal-panel">
             <div class="wpal-panel-head">
                 <div>
                     <h2><?php esc_html_e('Recent Scan History', 'wp-activity-logger-pro'); ?></h2>
@@ -428,10 +443,12 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                     <?php endforeach; ?>
                 <?php endif; ?>
             </div>
-        </article>
-    </section>
+                </article>
+            </section>
+        </div>
 
-    <section class="wpal-panel">
+        <div class="wpal-tab-panel" data-tab-panel="inventory">
+            <section class="wpal-panel">
         <div class="wpal-panel-head">
             <div>
                 <h2><?php esc_html_e('Scan Inventory', 'wp-activity-logger-pro'); ?></h2>
@@ -484,6 +501,8 @@ $assistant_hint = !empty($report['assistant_hint']) ? $report['assistant_hint'] 
                 <strong><?php echo esc_html(!empty($active_theme['name']) ? $active_theme['name'] : __('Unknown', 'wp-activity-logger-pro')); ?></strong>
                 <small><?php esc_html_e('Theme currently rendered publicly', 'wp-activity-logger-pro'); ?></small>
             </div>
+        </div>
+            </section>
         </div>
     </section>
 </div>
