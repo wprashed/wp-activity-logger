@@ -117,8 +117,9 @@ class WPAL_Settings {
             $sanitized['log_system_actions'] = 1;
         }
 
-        if (!empty($options['default_export_format']) && in_array($options['default_export_format'], array('csv', 'json', 'xml', 'pdf'), true)) {
-            $sanitized['default_export_format'] = $options['default_export_format'];
+        $export_format = isset($options['default_export_format']) ? sanitize_key($options['default_export_format']) : '';
+        if (!empty($export_format) && in_array($export_format, array('csv', 'json', 'xml', 'pdf'), true)) {
+            $sanitized['default_export_format'] = $export_format;
         }
 
         return wp_parse_args($sanitized, $defaults);
