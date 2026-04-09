@@ -58,7 +58,7 @@ class TracePilot_Archive {
      * Render page
      */
     public function render_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/archive.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-archive.php';
     }
     
     /**

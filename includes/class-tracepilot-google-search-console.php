@@ -88,7 +88,7 @@ class TracePilot_Google_Search_Console {
      * Render page
      */
     public function render_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/search-console.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-search-console.php';
     }
     
     /**

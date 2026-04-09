@@ -35,7 +35,7 @@ class TracePilot_Export {
      * Render export page.
      */
     public function render_export_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/export.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-export.php';
     }
 
     /**

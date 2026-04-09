@@ -153,7 +153,7 @@ class TracePilot_API {
             switch_to_blog(absint($_POST['site_id']));
             TracePilot_Helpers::init();
         }
-        include TracePilot_PLUGIN_DIR . 'templates/log-details.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-log-details.php';
         if (is_multisite() && !empty($_POST['site_id'])) {
             restore_current_blog();
             TracePilot_Helpers::init();

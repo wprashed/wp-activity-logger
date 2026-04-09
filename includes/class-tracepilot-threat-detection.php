@@ -39,7 +39,7 @@ class TracePilot_Threat_Detection {
      * Render page
      */
     public function render_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/threat-detection.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-threat-detection.php';
     }
     
     /**

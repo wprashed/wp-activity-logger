@@ -37,7 +37,7 @@ class TracePilot_Visual_Analytics {
      * Render page
      */
     public function render_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/analytics.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-analytics.php';
     }
     
     /**

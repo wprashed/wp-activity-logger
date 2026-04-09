@@ -37,7 +37,7 @@ class TracePilot_Server_Recommendations {
      * Render page
      */
     public function render_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/server-recommendations.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-server-recommendations.php';
     }
 
     /**

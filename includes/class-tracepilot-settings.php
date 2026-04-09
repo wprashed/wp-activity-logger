@@ -143,7 +143,7 @@ class TracePilot_Settings {
      * Render page.
      */
     public function render_settings_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/settings.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-settings.php';
     }
 
     /**

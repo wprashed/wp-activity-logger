@@ -104,48 +104,48 @@ class TracePilot_Dashboard {
      * Render dashboard page.
      */
     public function render_dashboard_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/dashboard.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-dashboard.php';
     }
 
     /**
      * Render logs page.
      */
     public function render_logs_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/logs.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-logs.php';
     }
 
     /**
      * Render analytics page.
      */
     public function render_analytics_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/analytics.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-analytics.php';
     }
 
     /**
      * Render threat detection page.
      */
     public function render_threat_detection_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/threat-detection.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-threat-detection.php';
     }
 
     /**
      * Render server recommendations page.
      */
     public function render_server_recommendations_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/server-recommendations.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-server-recommendations.php';
     }
 
     /**
      * Render search console page.
      */
     public function render_search_console_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/search-console.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-search-console.php';
     }
 
     /**
      * Render diagnostics page.
      */
     public function render_diagnostics_page() {
-        include TracePilot_PLUGIN_DIR . 'templates/diagnostics.php';
+        include TracePilot_PLUGIN_DIR . 'templates/tracepilot-diagnostics.php';
     }
 }
