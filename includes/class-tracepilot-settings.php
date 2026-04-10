@@ -16,9 +16,9 @@ class TracePilot_Settings {
      */
     public function __construct() {
         add_action('admin_init', array($this, 'register_settings'));
-        add_action('admin_init', array($this, 'handle_settings_form_submission'));
         add_action('admin_menu', array($this, 'add_settings_page'), 40);
         add_action('network_admin_menu', array($this, 'add_settings_page'), 40);
+        add_action('admin_post_tracepilot_save_settings_form', array($this, 'handle_settings_form_submission'));
         add_action('wp_ajax_tracepilot_save_settings', array($this, 'ajax_save_settings'));
         add_action('wp_ajax_tracepilot_reset_settings', array($this, 'ajax_reset_settings'));
     }
@@ -181,12 +181,7 @@ class TracePilot_Settings {
      * Handle standard form submission for settings.
      */
     public function handle_settings_form_submission() {
-        if (!is_admin() || empty($_POST['tracepilot_settings_submit'])) {
-            return;
-        }
-
-        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
-        if ('wp-activity-logger-pro-settings' !== $page) {
+        if (!is_admin()) {
             return;
         }
 
@@ -212,6 +207,7 @@ class TracePilot_Settings {
             array(
                 'page' => 'wp-activity-logger-pro-settings',
                 'tracepilot_settings_status' => 'saved',
+                'tracepilot_active_tab' => isset($_POST['tracepilot_active_tab']) ? sanitize_key(wp_unslash($_POST['tracepilot_active_tab'])) : '',
             ),
             is_network_admin() ? network_admin_url('admin.php') : admin_url('admin.php')
         );
