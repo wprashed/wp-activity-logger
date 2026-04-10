@@ -63,7 +63,15 @@ $gdpr_mode_enabled = !empty($settings['gdpr_mode']);
         </article>
     </section>
 
-    <form id="tracepilot-settings-form" class="tracepilot-form-shell">
+    <?php if (isset($_GET['tracepilot_settings_status']) && 'saved' === sanitize_key(wp_unslash($_GET['tracepilot_settings_status']))) : ?>
+        <div class="tracepilot-note tracepilot-note-success">
+            <?php esc_html_e('Settings saved successfully.', 'wp-activity-logger-pro'); ?>
+        </div>
+    <?php endif; ?>
+
+    <form id="tracepilot-settings-form" class="tracepilot-form-shell" method="post" action="">
+        <?php wp_nonce_field('tracepilot_save_settings', 'tracepilot_settings_nonce'); ?>
+        <input type="hidden" name="tracepilot_settings_submit" value="1">
         <section class="tracepilot-panel">
             <div class="tracepilot-panel-tabs" data-tracepilot-tabs>
                 <button type="button" class="tracepilot-panel-tab is-active" data-tab-target="privacy"><?php esc_html_e('Privacy', 'wp-activity-logger-pro'); ?></button>
