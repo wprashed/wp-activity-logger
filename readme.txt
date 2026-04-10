@@ -16,6 +16,10 @@ TracePilot for WordPress helps site owners, agencies, and administrators underst
 
 It records user and system activity, highlights suspicious patterns, offers diagnostics for common site issues, and provides export and privacy workflows for compliance or troubleshooting.
 
+== Live Demo ==
+
+[Try Live Demo (No Setup Required)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/wprashed/tracepilot-for-wordpress/refs/heads/main/blueprint.json)
+
 = Try it in 2 minutes =
 
 1. Install and activate TracePilot.
