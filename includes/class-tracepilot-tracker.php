@@ -37,6 +37,7 @@ class TracePilot_Tracker {
         // Track post actions
         add_action('transition_post_status', array($this, 'track_post_status'), 10, 3);
         add_action('post_updated', array($this, 'track_post_update'), 10, 3);
+        add_action('before_delete_post', array($this, 'track_post_delete'), 10, 1);
         
         // Track comment actions
         add_action('wp_insert_comment', array($this, 'track_comment_insert'), 10, 2);
@@ -380,6 +381,48 @@ class TracePilot_Tracker {
                     'content_changed' => $post_after->post_content !== $post_before->post_content,
                     'excerpt_changed' => $post_after->post_excerpt !== $post_before->post_excerpt,
                 ),
+            )
+        );
+    }
+
+    /**
+     * Track permanent post/page deletions.
+     *
+     * @param int $post_id Post ID.
+     */
+    public function track_post_delete($post_id) {
+        $post = get_post($post_id);
+        if (!$post instanceof WP_Post) {
+            return;
+        }
+
+        if (wp_is_post_revision($post_id) || wp_is_post_autosave($post_id)) {
+            return;
+        }
+
+        if ('auto-draft' === $post->post_status) {
+            return;
+        }
+
+        $user = wp_get_current_user();
+        $user_data = $this->get_user_data($user);
+        $geo_data = $this->get_geolocation_data();
+
+        TracePilot_Helpers::log_activity(
+            'post_deleted',
+            sprintf(__('%s deleted: %s', 'wp-activity-logger-pro'), ucfirst($post->post_type), $post->post_title),
+            'warning',
+            array(
+                'user_id' => $user->ID,
+                'username' => $user->user_login,
+                'user_role' => $user_data['role'],
+                'object_id' => $post->ID,
+                'object_type' => $post->post_type,
+                'object_name' => $post->post_title,
+                'ip' => $geo_data['ip'],
+                'location' => $geo_data['location'],
+                'country' => $geo_data['country'],
+                'country_code' => $geo_data['country_code'],
             )
         );
     }
@@ -779,6 +822,8 @@ class TracePilot_Tracker {
             return;
         }
 
+        $lifecycle_action = isset($options['action']) ? sanitize_key($options['action']) : 'update';
+
         if (!function_exists('get_plugin_data')) {
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
@@ -826,10 +871,22 @@ class TracePilot_Tracker {
                 $plugin_name = !empty($plugin_data['Name']) ? $plugin_data['Name'] : $plugin_file;
                 $plugin_version = !empty($plugin_data['Version']) ? $plugin_data['Version'] : '';
 
+                $event_key = 'plugin_updated';
+                $event_message = __('Plugin updated: %s', 'wp-activity-logger-pro');
+                $severity = 'info';
+                if ('install' === $lifecycle_action) {
+                    $event_key = 'plugin_installed';
+                    $event_message = __('Plugin installed: %s', 'wp-activity-logger-pro');
+                } elseif ('delete' === $lifecycle_action) {
+                    $event_key = 'plugin_deleted';
+                    $event_message = __('Plugin deleted: %s', 'wp-activity-logger-pro');
+                    $severity = 'warning';
+                }
+
                 TracePilot_Helpers::log_activity(
-                    'plugin_updated',
-                    sprintf(__('Plugin updated: %s', 'wp-activity-logger-pro'), $plugin_name),
-                    'info',
+                    $event_key,
+                    sprintf($event_message, $plugin_name),
+                    $severity,
                     array_merge(
                         $base_args,
                         array(
@@ -853,10 +910,22 @@ class TracePilot_Tracker {
                 $theme_name = $theme->exists() ? $theme->get('Name') : $stylesheet;
                 $theme_version = $theme->exists() ? $theme->get('Version') : '';
 
+                $event_key = 'theme_updated';
+                $event_message = __('Theme updated: %s', 'wp-activity-logger-pro');
+                $severity = 'info';
+                if ('install' === $lifecycle_action) {
+                    $event_key = 'theme_installed';
+                    $event_message = __('Theme installed: %s', 'wp-activity-logger-pro');
+                } elseif ('delete' === $lifecycle_action) {
+                    $event_key = 'theme_deleted';
+                    $event_message = __('Theme deleted: %s', 'wp-activity-logger-pro');
+                    $severity = 'warning';
+                }
+
                 TracePilot_Helpers::log_activity(
-                    'theme_updated',
-                    sprintf(__('Theme updated: %s', 'wp-activity-logger-pro'), $theme_name),
-                    'info',
+                    $event_key,
+                    sprintf($event_message, $theme_name),
+                    $severity,
                     array_merge(
                         $base_args,
                         array(
