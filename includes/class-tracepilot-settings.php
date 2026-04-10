@@ -16,6 +16,7 @@ class TracePilot_Settings {
      */
     public function __construct() {
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_init', array($this, 'handle_settings_form_submission'));
         add_action('admin_menu', array($this, 'add_settings_page'), 40);
         add_action('network_admin_menu', array($this, 'add_settings_page'), 40);
         add_action('wp_ajax_tracepilot_save_settings', array($this, 'ajax_save_settings'));
@@ -174,6 +175,49 @@ class TracePilot_Settings {
      */
     public function render_settings_page() {
         include TracePilot_PLUGIN_DIR . 'templates/tracepilot-settings.php';
+    }
+
+    /**
+     * Handle standard form submission for settings.
+     */
+    public function handle_settings_form_submission() {
+        if (!is_admin() || empty($_POST['tracepilot_settings_submit'])) {
+            return;
+        }
+
+        $page = isset($_GET['page']) ? sanitize_key(wp_unslash($_GET['page'])) : '';
+        if ('wp-activity-logger-pro-settings' !== $page) {
+            return;
+        }
+
+        if (!TracePilot_Helpers::current_user_can_manage()) {
+            wp_die(esc_html__('You do not have permission to perform this action.', 'wp-activity-logger-pro'));
+        }
+
+        check_admin_referer('tracepilot_save_settings', 'tracepilot_settings_nonce');
+
+        $raw = isset($_POST['wpal_options']) ? (array) wp_unslash($_POST['wpal_options']) : array();
+        $sanitized = $this->sanitize_options($raw);
+
+        update_option('wpal_options', $sanitized);
+        update_option('wpal_settings', $sanitized);
+
+        TracePilot_Helpers::log_activity(
+            'settings_updated',
+            __('TracePilot settings updated', 'wp-activity-logger-pro'),
+            'info'
+        );
+
+        $redirect_url = add_query_arg(
+            array(
+                'page' => 'wp-activity-logger-pro-settings',
+                'tracepilot_settings_status' => 'saved',
+            ),
+            is_network_admin() ? network_admin_url('admin.php') : admin_url('admin.php')
+        );
+
+        wp_safe_redirect($redirect_url);
+        exit;
     }
 
     /**
