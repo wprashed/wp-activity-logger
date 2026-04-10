@@ -2,6 +2,10 @@
 
 TracePilot for WordPress is a modern WordPress activity log, diagnostics, and threat-review plugin built for administrators who need visibility, traceability, and safer debugging tools inside wp-admin.
 
+## Live Demo
+
+[Try Live Demo (No Setup Required)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/wprashed/tracepilot-for-wordpress/refs/heads/main/blueprint.json)
+
 ## Overview
 
 The plugin combines several admin-focused workflows in one place:
