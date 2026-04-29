@@ -238,10 +238,9 @@ class TracePilot_Settings {
             wp_send_json_error(array('message' => __('You do not have permission to perform this action.', 'tracepilot')));
         }
 
-        $raw = isset($_POST['wpal_options']) ? (array) $_POST['wpal_options'] : array();
-        $raw = wp_unslash($raw);
+        $raw = isset($_POST['wpal_options']) ? (array) wp_unslash($_POST['wpal_options']) : array();
         $current = TracePilot_Helpers::get_settings();
-        $replace_mode = !empty($_POST['replace_mode']);
+        $replace_mode = isset($_POST['replace_mode']) ? (bool) absint(wp_unslash($_POST['replace_mode'])) : false;
         $merged = $replace_mode ? $raw : array_merge($current, $raw);
         $sanitized = $this->sanitize_options($merged);
 
