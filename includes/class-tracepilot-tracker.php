@@ -1602,7 +1602,8 @@ class TracePilot_Tracker {
      */
     public function track_file_edit() {
         // Check if this is a file edit request
-        if (!isset($_POST['action']) || $_POST['action'] !== 'edit-theme-plugin-file') {
+        $request_action = isset($_POST['action']) ? sanitize_text_field(wp_unslash($_POST['action'])) : '';
+        if ('edit-theme-plugin-file' !== $request_action) {
             return;
         }
         
@@ -1612,7 +1613,7 @@ class TracePilot_Tracker {
         }
         
         // Get file
-        $file = sanitize_text_field($_POST['file']);
+        $file = sanitize_text_field(wp_unslash($_POST['file']));
         
         // Get current user
         $user = wp_get_current_user();
@@ -1726,7 +1727,7 @@ class TracePilot_Tracker {
         
         // Check if geolocation is enabled
         $options = get_option('wpal_options', array());
-        $enable_geolocation = isset($options['enable_geolocation']) ? (bool) $options['enable_geolocation'] : true;
+        $enable_geolocation = isset($options['enable_geolocation']) ? (bool) $options['enable_geolocation'] : false;
         
         if (!$enable_geolocation) {
             return array(
