@@ -46,8 +46,8 @@ class TracePilot_Threat_Detection {
      * AJAX analyze threats
      */
     public function ajax_analyze_threats() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'tracepilot')));
         }
         
@@ -701,6 +701,12 @@ class TracePilot_Threat_Detection {
      * Get IP geolocation
      */
     private function get_ip_geolocation($ip) {
+        $ip = sanitize_text_field((string) $ip);
+        $settings = TracePilot_Helpers::get_settings();
+        if (empty($settings['enable_geolocation'])) {
+            return array('country' => __('Unavailable', 'tracepilot'));
+        }
+
         // Check if IP is valid
         if (empty($ip) || $ip === '127.0.0.1' || $ip === '::1') {
             return array('country' => __('Local', 'tracepilot'));
@@ -715,7 +721,12 @@ class TracePilot_Threat_Detection {
         }
         
         // Call geolocation API
-        $response = wp_remote_get('http://ip-api.com/json/' . $ip);
+        $response = wp_remote_get(
+            'https://ip-api.com/json/' . rawurlencode($ip),
+            array(
+                'timeout' => 10,
+            )
+        );
         
         if (is_wp_error($response)) {
             return array('country' => __('Unknown', 'tracepilot'));
