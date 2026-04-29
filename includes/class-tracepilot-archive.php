@@ -106,8 +106,8 @@ class TracePilot_Archive {
      * AJAX archive log
      */
     public function ajax_archive_log() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'tracepilot')));
         }
         
@@ -117,8 +117,8 @@ class TracePilot_Archive {
         }
         
         // Get log ID
-        $log_id = isset($_POST['log_id']) ? intval($_POST['log_id']) : 0;
-        $site_id = isset($_POST['site_id']) ? intval($_POST['site_id']) : 0;
+        $log_id = isset($_POST['log_id']) ? absint(wp_unslash($_POST['log_id'])) : 0;
+        $site_id = isset($_POST['site_id']) ? absint(wp_unslash($_POST['site_id'])) : 0;
         
         if (!$log_id) {
             wp_send_json_error(array('message' => __('Invalid log ID.', 'tracepilot')));
@@ -221,8 +221,8 @@ class TracePilot_Archive {
      * AJAX archive all logs
      */
     public function ajax_archive_all_logs() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'tracepilot')));
         }
         
@@ -232,7 +232,13 @@ class TracePilot_Archive {
         }
         
         // Get filters
-        $filters = isset($_POST['filters']) ? $_POST['filters'] : array();
+        $raw_filters = isset($_POST['filters']) ? (array) wp_unslash($_POST['filters']) : array();
+        $filters = array(
+            'role' => isset($raw_filters['role']) ? sanitize_text_field($raw_filters['role']) : '',
+            'severity' => isset($raw_filters['severity']) ? sanitize_key($raw_filters['severity']) : '',
+            'date_from' => isset($raw_filters['date_from']) ? sanitize_text_field($raw_filters['date_from']) : '',
+            'date_to' => isset($raw_filters['date_to']) ? sanitize_text_field($raw_filters['date_to']) : '',
+        );
         
         // Archive logs
         $result = $this->archive_all_logs($filters);
@@ -375,8 +381,8 @@ class TracePilot_Archive {
      * AJAX restore log
      */
     public function ajax_restore_log() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'tracepilot')));
         }
         
@@ -386,7 +392,7 @@ class TracePilot_Archive {
         }
         
         // Get log ID
-        $log_id = isset($_POST['log_id']) ? intval($_POST['log_id']) : 0;
+        $log_id = isset($_POST['log_id']) ? absint(wp_unslash($_POST['log_id'])) : 0;
         
         if (!$log_id) {
             wp_send_json_error(array('message' => __('Invalid log ID.', 'tracepilot')));
@@ -479,8 +485,8 @@ class TracePilot_Archive {
      * AJAX delete archived log
      */
     public function ajax_delete_archived_log() {
-        // Check nonce
-        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'tracepilot_nonce')) {
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'tracepilot_nonce')) {
             wp_send_json_error(array('message' => __('Invalid security token.', 'tracepilot')));
         }
         
@@ -490,7 +496,7 @@ class TracePilot_Archive {
         }
         
         // Get log ID
-        $log_id = isset($_POST['log_id']) ? intval($_POST['log_id']) : 0;
+        $log_id = isset($_POST['log_id']) ? absint(wp_unslash($_POST['log_id'])) : 0;
         
         if (!$log_id) {
             wp_send_json_error(array('message' => __('Invalid log ID.', 'tracepilot')));
