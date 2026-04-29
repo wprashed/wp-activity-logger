@@ -57,6 +57,7 @@ class TracePilot_Export {
 
         $where = array('1=1');
         $args = array();
+        $request = isset($_POST) ? wp_unslash($_POST) : array();
 
         $filters = array(
             'user' => 'username = %s',
@@ -65,20 +66,20 @@ class TracePilot_Export {
         );
 
         foreach ($filters as $field => $sql) {
-            if (!empty($_POST[$field])) {
+            if (!empty($request[$field])) {
                 $where[] = $sql;
-                $args[] = sanitize_text_field(wp_unslash($_POST[$field]));
+                $args[] = sanitize_text_field($request[$field]);
             }
         }
 
-        if (!empty($_POST['date_from'])) {
+        if (!empty($request['date_from'])) {
             $where[] = 'time >= %s';
-            $args[] = sanitize_text_field(wp_unslash($_POST['date_from'])) . ' 00:00:00';
+            $args[] = sanitize_text_field($request['date_from']) . ' 00:00:00';
         }
 
-        if (!empty($_POST['date_to'])) {
+        if (!empty($request['date_to'])) {
             $where[] = 'time <= %s';
-            $args[] = sanitize_text_field(wp_unslash($_POST['date_to'])) . ' 23:59:59';
+            $args[] = sanitize_text_field($request['date_to']) . ' 23:59:59';
         }
 
         $query = "SELECT * FROM $table_name WHERE " . implode(' AND ', $where) . ' ORDER BY time DESC';
