@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$log_id = isset($_POST['log_id']) ? absint($_POST['log_id']) : 0;
+$log_id = isset($_POST['log_id']) ? absint(wp_unslash($_POST['log_id'])) : 0;
 if (!$log_id) {
     echo '<p>' . esc_html__('Invalid log ID.', 'tracepilot') . '</p>';
     return;
