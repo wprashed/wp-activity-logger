@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 }
 
 $options = TracePilot_Helpers::get_settings();
-$integrity = tracepilot_for_wordpress()->file_integrity->get_baseline_status();
+$integrity = tracepilot()->file_integrity->get_baseline_status();
 $vulnerability_report = array();
 $active_threat_rules = (int) $options['monitor_failed_logins'] + (int) $options['monitor_unusual_logins'] + (int) $options['monitor_file_changes'] + (int) $options['monitor_privilege_escalation'];
 $enabled_sources = array_values(array_intersect(array('wordfence', 'patchstack', 'wpscan'), (array) $options['vulnerability_sources']));
